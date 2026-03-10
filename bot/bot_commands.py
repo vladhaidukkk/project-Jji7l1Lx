@@ -1,5 +1,6 @@
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
+from bot.notes import Note
 from bot.notes.editor import open_editor
 
 bot_commands = CommandsRegistry()
@@ -141,6 +142,20 @@ def new_note(args: CommandArgs, context: CommandContext) -> None:
                 print(f"Note '{name}' updated.")
     else:
         print("Changes discarded.")
+
+
+@bot_commands.register("notes")
+def show_notes(context: CommandContext) -> None:
+    notes = context["notes"]
+    if not notes:
+        print("No notes.")
+        return
+
+    def format_note(note: Note) -> str:
+        content_preview = note.preview(30)
+        return f"{note.name}: {content_preview}" if content_preview else note.name
+
+    print("\n".join(format_note(note) for note in notes.values()))
 
 
 class StopCommandsLoop(Exception):
