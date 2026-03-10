@@ -90,3 +90,10 @@ class ContactsService:
             contact.edit_phone(phone[0], phone[1])
         if birthday:
             contact.add_birthday(birthday)
+
+    def delete_contact(self, name: str) -> None:
+        contact = self._contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        self._contacts.delete(name)

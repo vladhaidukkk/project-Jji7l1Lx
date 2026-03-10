@@ -64,34 +64,35 @@ def main() -> None:
 
     # Run commands in a loop
     print("Welcome to the assistant bot!")
-    while True:
-        command, command_args = commands_dispatcher.input_command("Enter a command: ")
-        if not command:
-            continue
+    try:
+        while True:
+            command, command_args = commands_dispatcher.input_command("Enter a command: ")
+            if not command:
+                continue
 
-        try:
-            commands_dispatcher.run_command(
-                command,
-                *command_args,
-                contacts=contacts,
-                contacts_service=contacts_service,
-                notes=notes,
-                notes_service=notes_service,
-            )
-        except CommandNotFoundError:
-            print("Invalid command.")
-        except InvalidCommandArgumentsError as e:
-            handle_invalid_command_args_error(e)
-        except ValueError as e:
-            print(e)
-        except StopCommandsLoop:
-            break
-        except Exception as e:
-            print(f"Whoops, an unexpected error occurred: {e}")
-
-    # Save contacts and notes at the end
-    contacts.save(contacts_path)
-    notes.save(notes_path)
+            try:
+                commands_dispatcher.run_command(
+                    command,
+                    *command_args,
+                    contacts=contacts,
+                    contacts_service=contacts_service,
+                    notes=notes,
+                    notes_service=notes_service,
+                )
+            except CommandNotFoundError:
+                print("Invalid command.")
+            except InvalidCommandArgumentsError as e:
+                handle_invalid_command_args_error(e)
+            except ValueError as e:
+                print(e)
+            except StopCommandsLoop:
+                break
+            except Exception as e:
+                print(f"Whoops, an unexpected error occurred: {e}")
+    finally:
+        # Save contacts and notes at the end
+        contacts.save(contacts_path)
+        notes.save(notes_path)
 
 
 if __name__ == "__main__":

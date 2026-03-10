@@ -1,6 +1,6 @@
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
-from bot.notes import Note
+from bot.notes import Note, NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
 
 bot_commands = CommandsRegistry()
@@ -122,8 +122,20 @@ def birthdays(context: CommandContext) -> None:
     )
 
 
-@bot_commands.register("new-note", args=["name"])
-def new_note(args: CommandArgs, context: CommandContext) -> None:
+@bot_commands.register("del", args=["name"])
+def delete_contact(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_contact(name)
+        print(f"Contact '{name}' deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("note", args=["name"])
+def edit_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     notes_service = context["notes_service"]
 
@@ -156,6 +168,32 @@ def show_notes(context: CommandContext) -> None:
         return f"{note.name}: {content_preview}" if content_preview else note.name
 
     print("\n".join(format_note(note) for note in notes.values()))
+
+
+@bot_commands.register("del-note", args=["name"])
+def delete_note(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    notes_service = context["notes_service"]
+
+    try:
+        notes_service.delete_note(name)
+        print(f"Note '{name}' deleted.")
+    except NoteNotFoundError:
+        print("Note doesn't exist.")
+
+
+@bot_commands.register("rename-note", args=["old name", "new name"])
+def rename_note(args: CommandArgs, context: CommandContext) -> None:
+    old_name, new_name = args
+    notes_service = context["notes_service"]
+
+    try:
+        notes_service.rename_note(old_name, new_name)
+        print(f"Note '{old_name}' renamed to '{new_name}'.")
+    except NoteNotFoundError:
+        print("Note doesn't exist.")
+    except NoteAlreadyExistsError:
+        print("Note with new name already exists.")
 
 
 class StopCommandsLoop(Exception):

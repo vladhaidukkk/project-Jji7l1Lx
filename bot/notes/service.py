@@ -45,3 +45,15 @@ class NotesService:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
 
         self._notes.delete(name)
+
+    def rename_note(self, old_name: str, new_name: str) -> None:
+        note = self._notes.find(old_name)
+        if not note:
+            raise NoteNotFoundError(f"Note '{old_name}' does not exist.")
+        
+        if self._notes.find(new_name):
+            raise NoteAlreadyExistsError(f"Note '{new_name}' already exists.")
+
+        self._notes.delete(old_name)
+        note.name = new_name
+        self._notes.add_note(note)
