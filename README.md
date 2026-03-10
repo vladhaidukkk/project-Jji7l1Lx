@@ -78,32 +78,38 @@ To maintain a clean and efficient workflow, follow these steps when starting a n
 
 ```
 /
-├── bot/
-│   ├── __main__.py          # Application entry point & main loop
-│   ├── bot_commands.py      # Definition and registration of all bot commands
-│   ├── commands/            # Core command processing logic
-│   │   ├── dispatcher.py    # Handles user input and command execution
-│   │   ├── registry.py      # Manages command registration
-│   │   └── errors.py        # Command-related custom exceptions
-└── contacts/            # Business logic for contact management
-    ├── models.py        # Data models (ContactsBook, Record, etc.)
-    ├── service.py       # Services for contact operations
-    └── errors.py        # Contact-related custom exceptions
+└── bot/
+    ├── __main__.py          # Application entry point & main loop
+    ├── bot_commands.py      # Definition and registration of all bot commands
+    ├── commands/            # Core command processing logic
+    │   ├── dispatcher.py    # Handles user input and command execution
+    │   ├── registry.py      # Manages command registration
+    │   └── errors.py        # Command-related custom exceptions
+    ├── contacts/            # Business logic for contact management
+    │   ├── models.py        # Data models (ContactsBook, Record, etc.)
+    │   ├── service.py       # Services for contact operations
+    │   └── errors.py        # Contact-related custom exceptions
+    └── notes/               # Business logic for notes management
+        ├── models.py        # Data models (NotesBook, Note, etc.)
+        ├── service.py       # Services for note operations
+        ├── editor.py        # Interactive note editor (CLI-based)
+        └── errors.py        # Note-related custom exceptions
 ```
 
 ### Core Components
 
-- **`bot/__main__.py`**: This is where the application starts. It initializes the `ContactsBook`, `ContactsService`, and enters a `while` loop to continuously prompt the user for input.
-- **`CommandsRegistry`**: A central class (in `bot/commands/registry.py`) that stores all available commands and their metadata (required/optional arguments).
-- **`CommandsDispatcher`**: Responsible for parsing user input and invoking the correct function from the registry with the appropriate arguments and context.
-- **`ContactsService`**: Acts as an intermediary between the command functions and the data models, handling the business logic of adding, updating, and retrieving contacts.
+- **`bot/__main__.py`**: The application entry point. It initializes `ContactsService` and `NotesService`, manages the main loop, and ensures data is persisted to disk on exit.
+- **`CommandsRegistry`**: A central class (`bot/commands/registry.py`) that stores all available commands and their metadata (arguments, aliases).
+- **`CommandsDispatcher`**: Responsible for parsing user input, looking up commands in the registry, and invoking them with the correct context and arguments.
+- **`ContactsService` & `NotesService`**: These services act as the primary interface for command functions to interact with the underlying data models (`ContactsBook`, `NotesBook`), enforcing business rules and handling data persistence.
+- **Interactive Editor**: A utility in `bot/notes/editor.py` that allows seamless editing of note content using the system's default text editor from within the CLI.
 
 ### How to Add New Commands
 
 All bot commands are defined in `bot/bot_commands.py`. To add a new command:
 
 1. Use the `@bot_commands.register` decorator.
-2. Define the function, specifying if it needs `args` (user-provided arguments) or `context` (injected services like `contacts_service`).
+2. Define the function, specifying if it needs `args` (user-provided arguments) or `context` (injected services like `contacts_service` or `notes_service`).
 
 Example:
 ```python

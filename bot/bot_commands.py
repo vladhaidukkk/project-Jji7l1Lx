@@ -1,5 +1,6 @@
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
+from bot.notes.editor import open_editor
 
 bot_commands = CommandsRegistry()
 
@@ -118,6 +119,28 @@ def birthdays(context: CommandContext) -> None:
             for upcoming_birthday in upcoming_birthdays
         )
     )
+
+
+@bot_commands.register("new-note", args=["name"])
+def new_note(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    notes_service = context["notes_service"]
+
+    # Pre-fill if note already exists
+    existing_note = notes_service.get_note(name)
+    initial_text = existing_note.content if existing_note else ""
+
+    print(f"Opening editor for note '{name}'...")
+    final_content = open_editor(title=name, initial_text=initial_text)
+
+    if final_content is not None:
+        match notes_service.add_or_update_note(name, final_content):
+            case "added":
+                print(f"Note '{name}' created and saved.")
+            case "updated":
+                print(f"Note '{name}' updated.")
+    else:
+        print("Changes discarded.")
 
 
 class StopCommandsLoop(Exception):
