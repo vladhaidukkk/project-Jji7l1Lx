@@ -1,4 +1,5 @@
 import inspect
+import shlex
 from typing import Any, get_type_hints
 
 from prompt_toolkit import prompt
@@ -22,7 +23,13 @@ class CommandsDispatcher:
         if not user_input:
             return None, []
 
-        command, *args = user_input.split()
+        try:
+            parts = shlex.split(user_input)
+        except ValueError:
+            # Fallback for unbalanced quotes (e.g. `add-address john "Chicago`)
+            parts = user_input.split()
+
+        command, *args = parts
         command = command.lower()
         return command, args
 

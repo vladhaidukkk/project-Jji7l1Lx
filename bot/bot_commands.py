@@ -95,8 +95,34 @@ def show_birthday(args: CommandArgs, context: CommandContext) -> None:
 
     contact = contacts_service.get_contact(name)
     if contact:
-        birthday = contact.get_birthday()
-        print(birthday or "Contact doesn't have a birthday set.")
+        print(contact.birthday or "Contact doesn't have a birthday set.")
+    else:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("add-address", args=["name", "address"])
+def add_address(args: CommandArgs, context: CommandContext) -> None:
+    name, address = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        match contacts_service.add_address(name, address=address):
+            case "added":
+                print("Address added.")
+            case "updated":
+                print("Address updated.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("show-address", args=["name"])
+def show_address(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    contact = contacts_service.get_contact(name)
+    if contact:
+        print(contact.address or "Contact doesn't have an address set.")
     else:
         print("Contact doesn't exist.")
 
