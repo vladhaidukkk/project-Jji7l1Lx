@@ -77,16 +77,16 @@ class NotesService:
         score_cutoff: float = 50.0,
         limit: int = 5,
     ) -> list[SearchResultItem]:
+        query = query.lower()
+
         matches: list[SearchResultItem] = []
         for note in self.__notes.data.values():
             # Match against name (case-insensitive)
-            name_res = fuzz.partial_ratio_alignment(query.lower(), note.name.lower())
+            name_res = fuzz.partial_ratio_alignment(query, note.name.lower())
             name_score = name_res.score if name_res else 0.0
 
             # Match against content (case-insensitive)
-            content_res = fuzz.partial_ratio_alignment(
-                query.lower(), note.content.lower()
-            )
+            content_res = fuzz.partial_ratio_alignment(query, note.content.lower())
             content_score = content_res.score if content_res else 0.0
 
             # Keep the best match for this note
