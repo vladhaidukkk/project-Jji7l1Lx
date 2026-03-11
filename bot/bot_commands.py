@@ -1,3 +1,6 @@
+from rich.console import Console
+from rich.text import Text
+
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
 from bot.notes import Note, NoteAlreadyExistsError, NoteNotFoundError
@@ -197,6 +200,60 @@ def rename_note(args: CommandArgs, context: CommandContext) -> None:
         print("Note doesn't exist.")
     except NoteAlreadyExistsError:
         print("Note with new name already exists.")
+
+
+@bot_commands.register("search-notes", args=["query"])
+def search_notes(args: CommandArgs, context: CommandContext) -> None:
+    query = args[0]
+    notes = context["notes"]
+    notes_service = context["notes_service"]
+
+    if not notes:
+        print("No notes available to search.")
+        return
+
+    console = Console()
+    matches = notes_service.search_notes(query)
+
+    if not matches:
+        print(f"No match found for '{query}'.")
+        return
+
+    print("Suggested notes:")
+    for note, score, name_res, content_res in matches:
+        title_text = Text("- ")
+        if name_res and name_res.score == score:
+            # Highlight title
+            title_text.append(note.name[: name_res.dest_start])
+            title_text.append(
+                note.name[name_res.dest_start : name_res.dest_end], style="bold green"
+            )
+            title_text.append(note.name[name_res.dest_end :])
+        else:
+            title_text.append(note.name)
+
+        console.print(title_text)
+
+        if content_res and content_res.score == score:
+            # Highlight content snippet
+            start = max(0, content_res.dest_start - 20)
+            end = min(len(note.content), content_res.dest_end + 20)
+
+            content_snippet = Text("  Content match: ")
+            if start > 0:
+                content_snippet.append("...")
+
+            content_snippet.append(note.content[start : content_res.dest_start])
+            content_snippet.append(
+                note.content[content_res.dest_start : content_res.dest_end],
+                style="bold green",
+            )
+            content_snippet.append(note.content[content_res.dest_end : end])
+
+            if end < len(note.content):
+                content_snippet.append("...")
+
+            console.print(content_snippet)
 
 
 class StopCommandsLoop(Exception):

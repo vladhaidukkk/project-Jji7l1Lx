@@ -1,4 +1,6 @@
-from typing import Literal
+from typing import Any, Literal
+
+from rapidfuzz import fuzz
 
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
 from .models import Note, NotesBook
@@ -65,3 +67,30 @@ class NotesService:
         note.name = new_name
         self.__notes.add_note(note)
         return "renamed"
+
+    def search_notes(
+        self,
+        query: str,
+        *,
+        score_cutoff: float = 50.0,
+    ) -> list[tuple[Note, float, Any, Any]]:
+        matches: list[tuple[Note, float, Any, Any]] = []
+        for note in self.__notes.data.values():
+            # Match against name (case-insensitive)
+            name_res = fuzz.partial_ratio_alignment(query.lower(), note.name.lower())
+            name_score = name_res.score if name_res else 0.0
+
+            # Match against content (case-insensitive)
+            content_res = fuzz.partial_ratio_alignment(
+                query.lower(), note.content.lower()
+            )
+            content_score = content_res.score if content_res else 0.0
+
+            # Keep the best match for this note
+            best_score = max(name_score, content_score)
+            if best_score >= score_cutoff:
+                matches.append((note, best_score, name_res, content_res))
+
+        # Sort matches by highest score
+        matches.sort(key=lambda x: x[1], reverse=True)
+        return matches[:5]
