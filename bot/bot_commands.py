@@ -6,6 +6,7 @@ from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
 from bot.notes import Note, NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
 
+console = Console()
 bot_commands = CommandsRegistry()
 
 
@@ -212,7 +213,6 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
         print("No notes available to search.")
         return
 
-    console = Console()
     matches = notes_service.search_notes(query)
 
     if not matches:

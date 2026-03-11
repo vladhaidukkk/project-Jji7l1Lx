@@ -5,6 +5,8 @@ from rapidfuzz import fuzz
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
 from .models import Note, NotesBook
 
+SearchResultItem = tuple[Note, float, Any, Any]
+
 
 class NotesService:
     def __init__(self, notes: NotesBook) -> None:
@@ -73,8 +75,9 @@ class NotesService:
         query: str,
         *,
         score_cutoff: float = 50.0,
-    ) -> list[tuple[Note, float, Any, Any]]:
-        matches: list[tuple[Note, float, Any, Any]] = []
+        limit: int = 5,
+    ) -> list[SearchResultItem]:
+        matches: list[SearchResultItem] = []
         for note in self.__notes.data.values():
             # Match against name (case-insensitive)
             name_res = fuzz.partial_ratio_alignment(query.lower(), note.name.lower())
@@ -93,4 +96,4 @@ class NotesService:
 
         # Sort matches by highest score
         matches.sort(key=lambda x: x[1], reverse=True)
-        return matches[:5]
+        return matches[:limit]
