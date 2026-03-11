@@ -188,8 +188,11 @@ def rename_note(args: CommandArgs, context: CommandContext) -> None:
     notes_service = context["notes_service"]
 
     try:
-        notes_service.rename_note(old_name, new_name)
-        print(f"Note '{old_name}' renamed to '{new_name}'.")
+        match notes_service.rename_note(old_name, new_name):
+            case "renamed":
+                print(f"Note '{old_name}' renamed to '{new_name}'.")
+            case "skipped":
+                print(f"Note name is already '{new_name}'.")
     except NoteNotFoundError:
         print("Note doesn't exist.")
     except NoteAlreadyExistsError:

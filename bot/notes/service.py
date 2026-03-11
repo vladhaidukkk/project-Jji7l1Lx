@@ -46,9 +46,13 @@ class NotesService:
 
         self._notes.delete(name)
 
-    def rename_note(self, old_name: str, new_name: str) -> None:
+    def rename_note(
+        self,
+        old_name: str,
+        new_name: str,
+    ) -> Literal["renamed", "skipped"]:
         if old_name == new_name:
-            return
+            return "skipped"
 
         note = self._notes.find(old_name)
         if not note:
@@ -60,3 +64,4 @@ class NotesService:
         self._notes.delete(old_name)
         note.name = new_name
         self._notes.add_note(note)
+        return "renamed"
