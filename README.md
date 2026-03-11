@@ -4,7 +4,7 @@ A CLI-based assistant bot for managing contacts and notes.
 
 ## Getting Started
 
-Follow these steps to set up the project locally:
+First, [install `uv`](https://docs.astral.sh/uv/getting-started/installation/) if you haven't already. Then, set up the project using `uv` for easy environment management:
 
 1. **Clone the repository:**
    ```bash
@@ -12,30 +12,17 @@ Follow these steps to set up the project locally:
    cd project-Jji7l1Lx
    ```
 
-2. **Create a virtual environment:**
+2. **Setup environment & dependencies:**
    ```bash
-   python -m venv .venv
+   uv sync
    ```
+   *This automatically sets up the correct Python version, creates a virtual environment, and installs all packages.*
 
-3. **Activate the virtual environment:**
-   - **MacOS/Linux:**
-     ```bash
-     source .venv/bin/activate
-     ```
-   - **Windows:**
-     ```bash
-     .venv\Scripts\activate
-     ```
-
-4. **Install dependencies:**
+3. **Run the bot:**
    ```bash
-   pip install -r requirements.txt
+   uv run python -m bot
    ```
-
-5. **Run the bot:**
-   ```bash
-   python -m bot
-   ```
+   *This automatically ensures the command is executed within the virtual environment.*
 
 ## Working with Git
 
