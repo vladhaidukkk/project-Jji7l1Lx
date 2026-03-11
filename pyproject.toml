@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "project-jji7l1lx"
 version = "0.1.0"
@@ -5,3 +9,9 @@ description = "CLI assistant for contacts and notes management"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = ["prompt-toolkit>=3.0.52", "rapidfuzz>=3.14.3", "rich>=14.3.3"]
+
+[project.scripts]
+cna = "bot.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["bot"]
