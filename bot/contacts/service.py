@@ -6,7 +6,7 @@ from .models import ContactRecord, ContactsBook
 
 class ContactsService:
     def __init__(self, contacts: ContactsBook) -> None:
-        self._contacts = contacts
+        self.__contacts = contacts
 
     def create_contact(
         self,
@@ -15,7 +15,7 @@ class ContactsService:
         phone: str | None = None,
         birthday: str | None = None,
     ) -> None:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if contact:
             raise ContactAlreadyExistsError(f"Contact '{name}' aready exists.")
 
@@ -24,7 +24,7 @@ class ContactsService:
             contact.add_phone(phone)
         if birthday:
             contact.add_birthday(birthday)
-        self._contacts.add_record(contact)
+        self.__contacts.add_record(contact)
 
     def add_contact(
         self,
@@ -33,7 +33,7 @@ class ContactsService:
         phone: str | None = None,
         birthday: str | None = None,
     ) -> str:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if not contact:
             self.create_contact(name, phone=phone)
             return "added"
@@ -52,7 +52,7 @@ class ContactsService:
         raise ContactAlreadyExistsError(f"Contact '{name}' aready exists")
 
     def add_phone(self, name: str, *, phone: str) -> None:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
@@ -64,7 +64,7 @@ class ContactsService:
         *,
         birthday: str,
     ) -> Literal["added", "updated"]:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
@@ -73,7 +73,7 @@ class ContactsService:
         return "updated" if had_birthday else "added"
 
     def get_contact(self, name: str) -> ContactRecord | None:
-        return self._contacts.find(name)
+        return self.__contacts.find(name)
 
     def update_contact(
         self,
@@ -82,7 +82,7 @@ class ContactsService:
         phone: tuple[str, str] | None,
         birthday: str | None = None,
     ) -> None:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
@@ -92,8 +92,8 @@ class ContactsService:
             contact.add_birthday(birthday)
 
     def delete_contact(self, name: str) -> None:
-        contact = self._contacts.find(name)
+        contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        self._contacts.delete(name)
+        self.__contacts.delete(name)

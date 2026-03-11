@@ -122,7 +122,7 @@ def birthdays(context: CommandContext) -> None:
     )
 
 
-@bot_commands.register("del", args=["name"])
+@bot_commands.register("delete", args=["name"])
 def delete_contact(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -170,7 +170,7 @@ def show_notes(context: CommandContext) -> None:
     print("\n".join(format_note(note) for note in notes.values()))
 
 
-@bot_commands.register("del-note", args=["name"])
+@bot_commands.register("delete-note", args=["name"])
 def delete_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     notes_service = context["notes_service"]
