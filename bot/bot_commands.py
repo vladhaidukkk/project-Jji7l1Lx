@@ -30,7 +30,27 @@ def add_contact(args: CommandArgs, context: CommandContext) -> None:
         print("Contact already exists.")
 
 
-@bot_commands.register("change", args=["name", "old phone number", "new phone number"])
+@bot_commands.register("change-name", args=["old name", "new name"])
+def change_name(args: CommandArgs, context: CommandContext) -> None:
+    old_name, new_name = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        match contacts_service.rename_contact(old_name, new_name):
+            case "renamed":
+                print(f"Contact '{old_name}' renamed to '{new_name}'.")
+            case "skipped":
+                print(f"Contact name is already '{new_name}'.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+    except ContactAlreadyExistsError:
+        print("Contact with new name already exists.")
+
+
+@bot_commands.register(
+    "change-phone",
+    args=["name", "old phone number", "new phone number"],
+)
 def change_phone(args: CommandArgs, context: CommandContext) -> None:
     name, old_phone, new_phone = args
     contacts_service = context["contacts_service"]
@@ -213,7 +233,7 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
         print("No notes available to search.")
         return
 
-    matches = notes_service.search_notes(query)
+    matches = notes_service.search_notes(query, score_cutoff=60.0)
 
     if not matches:
         print(f"No match found for '{query}'.")

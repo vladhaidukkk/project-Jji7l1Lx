@@ -1,7 +1,7 @@
 from typing import Literal
 
 from .errors import ContactAlreadyExistsError, ContactNotFoundError
-from .models import ContactRecord, ContactsBook
+from .models import ContactRecord, ContactsBook, Name
 
 
 class ContactsService:
@@ -97,3 +97,23 @@ class ContactsService:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
         self.__contacts.delete(name)
+
+    def rename_contact(
+        self,
+        old_name: str,
+        new_name: str,
+    ) -> Literal["renamed", "skipped"]:
+        if old_name == new_name:
+            return "skipped"
+
+        contact = self.__contacts.find(old_name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{old_name}' does not exist.")
+
+        if self.__contacts.find(new_name):
+            raise ContactAlreadyExistsError(f"Contact '{new_name}' already exists.")
+
+        self.__contacts.delete(old_name)
+        contact.name = Name(new_name)
+        self.__contacts.add_record(contact)
+        return "renamed"
