@@ -15,7 +15,9 @@ class Note:
     def preview(self, length: int = 50) -> str:
         preview_text = self.content.replace("\n", " ").strip()
         if len(preview_text) > length:
-            return preview_text[: length - 3] + "..."
+            if length > 3:
+                return preview_text[: length - 3] + "..."
+            return preview_text[:length]
         return preview_text
 
 
