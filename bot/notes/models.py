@@ -12,6 +12,14 @@ class Note:
         self.name = name
         self.content = content
 
+    def preview(self, length: int = 50) -> str:
+        preview_text = self.content.replace("\n", " ").strip()
+        if len(preview_text) > length:
+            if length > 3:
+                return preview_text[: length - 3] + "..."
+            return preview_text[:length]
+        return preview_text
+
 
 class NotesBook(UserDict):
     def add_note(self, note: Note) -> None:
