@@ -21,7 +21,7 @@ class Command(NamedTuple):
 
 class CommandsRegistry:
     def __init__(self) -> None:
-        self._registry: dict[str, Command] = {}
+        self.__registry: dict[str, Command] = {}
 
     def register(
         self,
@@ -31,11 +31,11 @@ class CommandsRegistry:
     ) -> Callable:
         def decorator(func: Callable) -> Callable:
             for name in command_names:
-                if name in self._registry:
+                if name in self.__registry:
                     raise CommandAlreadyExistsError(
                         f"Command '{name}' is already registered."
                     )
-                self._registry[name] = Command(
+                self.__registry[name] = Command(
                     name=name,
                     func=func,
                     required_args=args or [],
@@ -46,7 +46,10 @@ class CommandsRegistry:
         return decorator
 
     def get(self, command_name: str) -> Command:
-        command = self._registry.get(command_name)
+        command = self.__registry.get(command_name)
         if not command:
             raise CommandNotFoundError(f"Command '{command_name}' is not registered.")
         return command
+    
+    def get_all_command_names(self) -> list[str]:
+        return list(self.__registry.keys())

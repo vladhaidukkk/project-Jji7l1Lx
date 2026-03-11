@@ -13,10 +13,10 @@ CommandContext = dict[str, Any]
 
 class CommandsDispatcher:
     def __init__(self, registry: CommandsRegistry) -> None:
-        self._registry = registry
+        self.__registry = registry
 
     def input_command(self, prompt_text: str) -> tuple[str | None, list[str]]:
-        possible_commands = list(self._registry._registry.keys())
+        possible_commands = self.__registry.get_all_command_names()
         completer = WordCompleter(possible_commands, sentence=True)
         user_input = prompt(prompt_text, completer=completer).strip()
         if not user_input:
@@ -27,7 +27,7 @@ class CommandsDispatcher:
         return command, args
 
     def run_command(self, command_name: str, *args: str, **kwargs: Any) -> None:
-        command = self._registry.get(command_name)
+        command = self.__registry.get(command_name)
         command_args: dict[str, Any] = {}
 
         sig = inspect.signature(command.func)
