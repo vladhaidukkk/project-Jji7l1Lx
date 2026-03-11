@@ -1,6 +1,9 @@
 import inspect
 from typing import Any, get_type_hints
 
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+
 from .errors import ForbiddenCommandArgumentError, InvalidCommandArgumentsError
 from .registry import CommandsRegistry
 
@@ -10,10 +13,12 @@ CommandContext = dict[str, Any]
 
 class CommandsDispatcher:
     def __init__(self, registry: CommandsRegistry) -> None:
-        self._registry = registry
+        self.__registry = registry
 
-    def input_command(self, prompt: str) -> tuple[str | None, list[str]]:
-        user_input = input(prompt).strip()
+    def input_command(self, prompt_text: str) -> tuple[str | None, list[str]]:
+        possible_commands = self.__registry.get_all_command_names()
+        completer = WordCompleter(possible_commands, sentence=True)
+        user_input = prompt(prompt_text, completer=completer).strip()
         if not user_input:
             return None, []
 
@@ -22,7 +27,7 @@ class CommandsDispatcher:
         return command, args
 
     def run_command(self, command_name: str, *args: str, **kwargs: Any) -> None:
-        command = self._registry.get(command_name)
+        command = self.__registry.get(command_name)
         command_args: dict[str, Any] = {}
 
         sig = inspect.signature(command.func)
