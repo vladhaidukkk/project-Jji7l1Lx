@@ -22,7 +22,7 @@ class Name(Field):
 
 
 class Phone(Field):
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, label: str | None = None) -> None:
         # Phone number validation
         value = value.strip()
         if not value:
@@ -33,6 +33,18 @@ class Phone(Field):
             raise ValueError("Phone number must contain only digits")
 
         super().__init__(value)
+        self.label = self._normalize_label(label) if label else None
+
+    @staticmethod
+    def _normalize_label(label: str) -> str:
+        label = label.strip()
+        if not label:
+            raise ValueError("Phone label cannot be empty")
+
+        return label
+
+    def __str__(self) -> str:
+        return f"{self.value} ({self.label})" if self.label else self.value
 
 
 class Birthday(Field):
@@ -93,17 +105,38 @@ class ContactRecord:
         del self.phones[phone_idx]
 
     def edit_phone(self, old_phone: str, new_phone: str) -> None:
+        if old_phone == new_phone:
+            raise ValueError("New phone number must be different from the current one")
+
         phone_idx = self._find_phone_index(old_phone)
         if phone_idx is None:
             raise ValueError(f"Phone number '{old_phone}' does not exist")
 
-        self.phones[phone_idx] = Phone(new_phone)
+        existing_phone_idx = self._find_phone_index(new_phone)
+        if existing_phone_idx is not None:
+            raise ValueError(f"Phone number '{new_phone}' already exists")
 
-    def replace_phone(self, phone_index: int, new_phone: str) -> None:
-        if phone_index > len(self.phones) - 1:
-            raise ValueError(f"Phone number at position {phone_index} does not exist")
+        self.phones[phone_idx] = Phone(
+            new_phone,
+            label=self.phones[phone_idx].label,
+        )
 
-        self.phones[phone_index] = Phone(new_phone)
+    def add_phone_label(self, phone: str, label: str) -> None:
+        phone_record = self.find_phone(phone)
+        if phone_record is None:
+            raise ValueError(f"Phone number '{phone}' does not exist")
+
+        phone_record.label = Phone._normalize_label(label)
+
+    def remove_phone_label(self, phone: str) -> None:
+        phone_record = self.find_phone(phone)
+        if phone_record is None:
+            raise ValueError(f"Phone number '{phone}' does not exist")
+
+        if phone_record.label is None:
+            raise ValueError(f"Phone number '{phone}' does not have a label")
+
+        phone_record.label = None
 
     def find_phone(self, phone: str) -> Phone | None:
         for p in self.phones:
@@ -149,7 +182,7 @@ class ContactRecord:
         self.is_favorite = False
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}"
 
 
 class ContactsBook(UserDict):

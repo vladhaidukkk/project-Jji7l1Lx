@@ -26,11 +26,8 @@ def add_contact(args: CommandArgs, context: CommandContext) -> None:
     contacts_service = context["contacts_service"]
 
     try:
-        match contacts_service.add_contact(name, phone=phone):
-            case "added":
-                print("Contact added.")
-            case "updated:phone":
-                print("Phone number added.")
+        contacts_service.create_contact(name, phone=phone)
+        print("Contact added.")
     except ContactAlreadyExistsError:
         print("Contact already exists.")
 
@@ -57,13 +54,6 @@ def add_phone(args: CommandArgs, context: CommandContext) -> None:
     name, phone = args
     contacts_service = context["contacts_service"]
 
-    contact = contacts_service.get_contact(name)
-    if contact and contact.phones:
-        # Temporary command-layer restriction: keep a single phone per contact
-        # until multi-phone support.
-        print("Contact already has a phone number.")
-        return
-
     try:
         contacts_service.add_phone(name, phone=phone)
         print("Phone number added.")
@@ -86,6 +76,7 @@ def change_phone(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
+# TODO: update from 'name' to 'contact name' for clarity (in all places)
 @bot_commands.register("show-phone", args=["name"])
 def show_phone(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
@@ -100,7 +91,7 @@ def show_phone(args: CommandArgs, context: CommandContext) -> None:
         print("This contact doesn't have a phone number.")
         return
 
-    print(contact.phones[0])
+    print("\n".join(str(phone) for phone in contact.phones))
 
 
 @bot_commands.register("delete-phone", args=["name", "phone number"])
@@ -115,10 +106,35 @@ def delete_phone(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
+@bot_commands.register("add-phone-label", args=["name", "phone number", "label"])
+def add_phone_label(args: CommandArgs, context: CommandContext) -> None:
+    name, phone, label = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.add_phone_label(name, phone=phone, label=label)
+        print("Phone label added.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("delete-phone-label", args=["name", "phone number"])
+def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
+    name, phone = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_phone_label(name, phone=phone)
+        print("Phone label deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
 def _print_contacts(contact_records: list) -> None:
     print(
         "\n".join(
-            f"{'* ' if c.is_favorite else ''}{c.name}: {c.phones[0] if c.phones else '-'}"
+            f"{'* ' if c.is_favorite else ''}{c.name}: "
+            f"{', '.join(str(phone) for phone in c.phones) if c.phones else '-'}"
             for c in contact_records
         )
     )
