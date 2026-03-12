@@ -117,11 +117,29 @@ class ContactRecord:
     def add_birthday(self, birthday: str) -> None:
         self.birthday = Birthday(birthday)
 
+    def remove_birthday(self) -> None:
+        if self.birthday is None:
+            raise ValueError("Birthday is not set")
+
+        self.birthday = None
+
     def add_email(self, email: str) -> None:
         self.email = Email(email)
 
+    def remove_email(self) -> None:
+        if self.email is None:
+            raise ValueError("Email is not set")
+
+        self.email = None
+
     def add_address(self, address: str) -> None:
         self.address = Address(address)
+
+    def remove_address(self) -> None:
+        if self.address is None:
+            raise ValueError("Address is not set")
+
+        self.address = None
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
