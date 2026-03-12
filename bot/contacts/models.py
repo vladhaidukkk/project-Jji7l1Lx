@@ -76,6 +76,7 @@ class ContactRecord:
         self.birthday: Birthday | None = None
         self.email: Email | None = None
         self.address: Address | None = None
+        self.is_favorite = False
 
     def add_phone(self, phone: str) -> None:
         phone_idx = self._find_phone_index(phone)
@@ -140,6 +141,12 @@ class ContactRecord:
             raise ValueError("Address is not set")
 
         self.address = None
+
+    def mark_favorite(self) -> None:
+        self.is_favorite = True
+
+    def unmark_favorite(self) -> None:
+        self.is_favorite = False
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
