@@ -15,9 +15,9 @@ def say_hello() -> None:
     print("How can I help you?")
 
 
-@bot_commands.register("add", args=["name"], optional_args=["phone number"])
+@bot_commands.register("add", args=["name"], optional_args=["phone number", "address"])
 def add_contact(args: CommandArgs, context: CommandContext) -> None:
-    name, phone = args
+    name, phone, address = args
     contacts_service = context["contacts_service"]
 
     try:
