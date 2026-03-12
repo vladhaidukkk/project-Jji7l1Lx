@@ -151,6 +151,20 @@ class ContactsService:
     def get_contact(self, name: str) -> ContactRecord | None:
         return self.__contacts.find(name)
 
+    def mark_favorite(self, name: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.mark_favorite()
+
+    def unmark_favorite(self, name: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.unmark_favorite()
+
     def update_contact(
         self,
         name: str,

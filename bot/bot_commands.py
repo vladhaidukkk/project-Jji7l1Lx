@@ -115,18 +115,38 @@ def delete_phone(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("all")
-def show_all(context: CommandContext) -> None:
-    contacts = context["contacts"]
-    if contacts:
-        print(
-            "\n".join(
-                f"{contact.name}: {contact.phones[0] if contact.phones else '-'}"
-                for contact in contacts.values()
-            )
+def _print_contacts(contact_records: list) -> None:
+    print(
+        "\n".join(
+            f"{'* ' if c.is_favorite else ''}{c.name}: {c.phones[0] if c.phones else '-'}"
+            for c in contact_records
         )
-    else:
+    )
+
+
+@bot_commands.register("contacts")
+def show_contacts(context: CommandContext) -> None:
+    contacts = context["contacts"]
+    if not contacts:
         print("No contacts.")
+        return
+
+    _print_contacts(list(contacts.values()))
+
+
+@bot_commands.register("favorite-contacts")
+def show_favorite_contacts(context: CommandContext) -> None:
+    contacts = context["contacts"]
+    if not contacts:
+        print("No contacts.")
+        return
+
+    favorite_contacts = [c for c in contacts.values() if c.is_favorite]
+    if not favorite_contacts:
+        print("No favorite contacts.")
+        return
+
+    _print_contacts(favorite_contacts)
 
 
 @bot_commands.register("add-birthday", args=["name", "birthday"])
@@ -279,6 +299,30 @@ def delete_contact(args: CommandArgs, context: CommandContext) -> None:
     try:
         contacts_service.delete_contact(name)
         print(f"Contact '{name}' deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("favorite", args=["name"])
+def favorite_contact(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.mark_favorite(name)
+        print(f"Contact '{name}' added to favorites.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("unfavorite", args=["name"])
+def unfavorite_contact(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.unmark_favorite(name)
+        print(f"Contact '{name}' removed from favorites.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
 
