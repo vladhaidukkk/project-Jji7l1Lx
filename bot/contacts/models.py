@@ -43,12 +43,25 @@ class Birthday(Field):
         except ValueError:
             raise ValueError("Invalid birthday format. Use DD.MM.YYYY")
 
+    def __str__(self) -> str:
+        return self.value.strftime("%Y.%m.%d")
+
+
+class Address(Field):
+    def __init__(self, value: str) -> None:
+        # Address validation
+        if not value:
+            raise ValueError("Address cannot be empty")
+
+        super().__init__(value)
+
 
 class ContactRecord:
     def __init__(self, name: str) -> None:
         self.name = Name(name)
         self.phones: list[Phone] = []
-        self.birthday = None
+        self.birthday: Birthday | None = None
+        self.address: Address | None = None
 
     def add_phone(self, phone: str) -> None:
         phone_idx = self._find_phone_index(phone)
@@ -90,8 +103,8 @@ class ContactRecord:
     def add_birthday(self, birthday: str) -> None:
         self.birthday = Birthday(birthday)
 
-    def get_birthday(self, format: str = "%Y.%m.%d") -> str | None:
-        return self.birthday.value.strftime(format) if self.birthday else None
+    def add_address(self, address: str) -> None:
+        self.address = Address(address)
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -147,7 +160,7 @@ class ContactsBook(UserDict):
             upcoming_birthdays.append(
                 {
                     "name": record.name,
-                    "birthday": record.get_birthday(),
+                    "birthday": str(record.birthday),
                     "congratulation_date": congratulation_date.strftime("%Y.%m.%d"),
                 }
             )

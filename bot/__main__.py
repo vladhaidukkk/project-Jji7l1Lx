@@ -46,7 +46,7 @@ def handle_invalid_command_args_error(error: InvalidCommandArgumentsError) -> No
             f"Give me {error.required_args_str} please, and optionally {error.optional_args_str}."
         )
     elif error.required_args:
-        print(f"Give me {error.required_args_str} pleaserror.")
+        print(f"Give me {error.required_args_str} please.")
     elif error.optional_args:
         print(f"You can optionally provide {error.optional_args_str}.")
     else:
@@ -66,11 +66,13 @@ def main() -> None:
     print("Welcome to the assistant bot!")
     try:
         while True:
-            command, command_args = commands_dispatcher.input_command("Enter a command: ")
-            if not command:
-                continue
-
             try:
+                command, command_args = commands_dispatcher.input_command(
+                    "Enter a command: "
+                )
+                if not command:
+                    continue
+
                 commands_dispatcher.run_command(
                     command,
                     *command_args,

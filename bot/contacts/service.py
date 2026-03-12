@@ -14,6 +14,7 @@ class ContactsService:
         *,
         phone: str | None = None,
         birthday: str | None = None,
+        address: str | None = None,
     ) -> None:
         contact = self.__contacts.find(name)
         if contact:
@@ -24,6 +25,8 @@ class ContactsService:
             contact.add_phone(phone)
         if birthday:
             contact.add_birthday(birthday)
+        if address:
+            contact.add_address(address)
         self.__contacts.add_record(contact)
 
     def add_contact(
@@ -32,10 +35,16 @@ class ContactsService:
         *,
         phone: str | None = None,
         birthday: str | None = None,
+        address: str | None = None,
     ) -> str:
         contact = self.__contacts.find(name)
         if not contact:
-            self.create_contact(name, phone=phone)
+            self.create_contact(
+                name,
+                phone=phone,
+                birthday=birthday,
+                address=address,
+            )
             return "added"
 
         updated = []
@@ -45,6 +54,9 @@ class ContactsService:
         if not contact.birthday and birthday:
             self.add_birthday(name, birthday=birthday)
             updated.append("birthday")
+        if not contact.address and address:
+            self.add_address(name, address=address)
+            updated.append("address")
 
         if updated:
             return f"updated:{'|'.join(updated)}"
@@ -72,6 +84,20 @@ class ContactsService:
         contact.add_birthday(birthday)
         return "updated" if had_birthday else "added"
 
+    def add_address(
+        self,
+        name: str,
+        *,
+        address: str,
+    ) -> Literal["added", "updated"]:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        had_address = contact.address is not None
+        contact.add_address(address)
+        return "updated" if had_address else "added"
+
     def get_contact(self, name: str) -> ContactRecord | None:
         return self.__contacts.find(name)
 
@@ -79,8 +105,9 @@ class ContactsService:
         self,
         name: str,
         *,
-        phone: tuple[str, str] | None,
+        phone: tuple[str, str] | None = None,
         birthday: str | None = None,
+        address: str | None = None,
     ) -> None:
         contact = self.__contacts.find(name)
         if not contact:
@@ -90,6 +117,8 @@ class ContactsService:
             contact.edit_phone(phone[0], phone[1])
         if birthday:
             contact.add_birthday(birthday)
+        if address:
+            contact.add_address(address)
 
     def delete_contact(self, name: str) -> None:
         contact = self.__contacts.find(name)
