@@ -5,33 +5,36 @@ from typing import Any, get_type_hints
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.history import FileHistory, InMemoryHistory
 
-from prompt_toolkit import prompt
-from prompt_toolkit.history import FileHistory
-
+from bot.config import DEFAULT_HISTORY_FILE
+from bot.utils.file_utils import ensure_file_exists
 from .errors import ForbiddenCommandArgumentError, InvalidCommandArgumentsError
 from .registry import CommandsRegistry
 
 CommandArgs = tuple[str, ...]
 CommandContext = dict[str, Any]
 
-DEFAULT_HISTORY_FILE = Path.home() / ".bot" / ".bot_history"
 
 class CommandsDispatcher:
     def __init__(self, registry: CommandsRegistry, history_file: Path = DEFAULT_HISTORY_FILE) -> None:
         self.__registry = registry
-        absolute_history_path = history_file.absolute()
-        self.__ensure_file_exists(absolute_history_path)
-        self._history = FileHistory(str(absolute_history_path))
+        self.__history = CommandsDispatcher.__initialize_history(history_file)
+        possible_commands = self.__registry.get_all_command_names()
+        self.__completer = WordCompleter(possible_commands, sentence=True)
 
-    def __ensure_file_exists(self, file_path: Path) -> None:
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.touch(exist_ok=True)
+    @staticmethod
+    def __initialize_history(history_file: Path) -> FileHistory | InMemoryHistory:
+        try:
+            absolute_history_path = history_file.absolute()
+            ensure_file_exists(absolute_history_path)
+            return FileHistory(str(absolute_history_path))
+        except Exception as e:
+            print(f"Failed to initialize history file: {e}, fallback to session history")
+            return InMemoryHistory()
 
     def input_command(self, prompt_text: str) -> tuple[str | None, list[str]]:
-        possible_commands = self.__registry.get_all_command_names()
-        completer = WordCompleter(possible_commands, sentence=True)
-        user_input = prompt(prompt_text, completer=completer, history=self._history).strip()
+        user_input = prompt(prompt_text, completer=self.__completer, history=self.__history).strip()
         if not user_input:
             return None, []
 
