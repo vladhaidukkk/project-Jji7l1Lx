@@ -134,8 +134,9 @@ def _print_contacts(contact_records: list) -> None:
     print(
         "\n".join(
             f"{'* ' if c.is_favorite else ''}{c.name}: "
-            f"{', '.join(str(phone) for phone in c.phones) if c.phones else '-'}; "
-            f"{', '.join(str(email) for email in c.emails) if c.emails else '-'}"
+            f"phones: {', '.join(str(phone) for phone in c.phones) if c.phones else '-'}; "
+            f"emails: {', '.join(str(email) for email in c.emails) if c.emails else '-'}; "
+            f"addresses: {', '.join(str(address) for address in c.addresses) if c.addresses else '-'}"
             for c in contact_records
         )
     )
@@ -292,11 +293,24 @@ def add_address(args: CommandArgs, context: CommandContext) -> None:
     contacts_service = context["contacts_service"]
 
     try:
-        match contacts_service.add_address(name, address=address):
-            case "added":
-                print("Address added.")
-            case "updated":
-                print("Address updated.")
+        contacts_service.add_address(name, address=address)
+        print("Address added.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("change-address", args=["name", "old address", "new address"])
+def change_address(args: CommandArgs, context: CommandContext) -> None:
+    name, old_address, new_address = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.change_address(
+            name,
+            old_address=old_address,
+            new_address=new_address,
+        )
+        print("Address updated.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
 
@@ -307,20 +321,49 @@ def show_address(args: CommandArgs, context: CommandContext) -> None:
     contacts_service = context["contacts_service"]
 
     contact = contacts_service.get_contact(name)
-    if contact:
-        print(contact.address or "Contact doesn't have an address set.")
-    else:
+    if not contact:
         print("Contact doesn't exist.")
+        return
+
+    if not contact.addresses:
+        print("Contact doesn't have an address set.")
+        return
+
+    print("\n".join(str(address) for address in contact.addresses))
 
 
-@bot_commands.register("delete-address", args=["name"])
+@bot_commands.register("delete-address", args=["name", "address"])
 def delete_address(args: CommandArgs, context: CommandContext) -> None:
-    name = args[0]
+    name, address = args
     contacts_service = context["contacts_service"]
 
     try:
-        contacts_service.delete_address(name)
+        contacts_service.delete_address(name, address=address)
         print("Address deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("add-address-label", args=["name", "address", "label"])
+def add_address_label(args: CommandArgs, context: CommandContext) -> None:
+    name, address, label = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.add_address_label(name, address=address, label=label)
+        print("Address label added.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("delete-address-label", args=["name", "address"])
+def delete_address_label(args: CommandArgs, context: CommandContext) -> None:
+    name, address = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_address_label(name, address=address)
+        print("Address label deleted.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
 
