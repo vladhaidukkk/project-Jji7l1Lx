@@ -3,24 +3,18 @@ import re
 from collections import UserDict
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Self
+from typing import Self
 
+from bot.common import Field
 from bot.utils.file_utils import ensure_file_dir_exists
 
 EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
 
-class Field:
-    def __init__(self, value: Any) -> None:
-        self.value = value
-
-    def __str__(self):
-        return str(self.value)
-
-
 class Name(Field):
     def __init__(self, value: str) -> None:
         # Name validation
+        value = value.strip()
         if not value:
             raise ValueError("Name cannot be empty")
 
@@ -30,6 +24,7 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value: str) -> None:
         # Phone number validation
+        value = value.strip()
         if not value:
             raise ValueError("Phone number cannot be empty")
         if len(value) != 10:
@@ -43,7 +38,7 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value: str) -> None:
         try:
-            value = datetime.strptime(value, "%d.%m.%Y")
+            value = datetime.strptime(value.strip(), "%d.%m.%Y")
             super().__init__(value)
         except ValueError:
             raise ValueError("Invalid birthday format. Use DD.MM.YYYY")
@@ -67,6 +62,7 @@ class Email(Field):
 class Address(Field):
     def __init__(self, value: str) -> None:
         # Address validation
+        value = value.strip()
         if not value:
             raise ValueError("Address cannot be empty")
 

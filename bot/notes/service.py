@@ -3,7 +3,7 @@ from typing import Any, Literal
 from rapidfuzz import fuzz
 
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
-from .models import Note, NotesBook
+from .models import Note, NoteContent, NoteName, NotesBook
 
 SearchResultItem = tuple[Note, float, Any, Any]
 
@@ -28,7 +28,7 @@ class NotesService:
         if not note:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
 
-        note.content = content
+        note.content = NoteContent(content)
 
     def add_or_update_note(
         self,
@@ -42,6 +42,20 @@ class NotesService:
 
         self.update_note_content(name, content)
         return "updated"
+
+    def add_note_tags(self, name: str, tags: list[str]) -> list[str]:
+        note = self.__notes.find(name)
+        if not note:
+            raise NoteNotFoundError(f"Note '{name}' does not exist.")
+
+        return note.add_tags(tags)
+
+    def remove_note_tags(self, name: str, tags: list[str]) -> list[str]:
+        note = self.__notes.find(name)
+        if not note:
+            raise NoteNotFoundError(f"Note '{name}' does not exist.")
+
+        return note.remove_tags(tags)
 
     def delete_note(self, name: str) -> None:
         note = self.__notes.find(name)
@@ -65,6 +79,7 @@ class NotesService:
         if self.__notes.find(new_name):
             raise NoteAlreadyExistsError(f"Note '{new_name}' already exists.")
 
+        new_name = NoteName(new_name)
         self.__notes.delete(old_name)
         note.name = new_name
         self.__notes.add_note(note)
@@ -82,11 +97,13 @@ class NotesService:
         matches: list[SearchResultItem] = []
         for note in self.__notes.data.values():
             # Match against name (case-insensitive)
-            name_res = fuzz.partial_ratio_alignment(query, note.name.lower())
+            name_res = fuzz.partial_ratio_alignment(query, note.name.value.lower())
             name_score = name_res.score if name_res else 0.0
 
             # Match against content (case-insensitive)
-            content_res = fuzz.partial_ratio_alignment(query, note.content.lower())
+            content_res = fuzz.partial_ratio_alignment(
+                query, note.content.value.lower()
+            )
             content_score = content_res.score if content_res else 0.0
 
             # Keep the best match for this note
