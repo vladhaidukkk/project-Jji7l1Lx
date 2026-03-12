@@ -1,18 +1,29 @@
-from rich.console import Console
 from rich.text import Text
 
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
+from bot.console import console
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
-from bot.notes import Note, NoteAlreadyExistsError, NoteNotFoundError
+from bot.notes import NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
 
-console = Console()
 bot_commands = CommandsRegistry()
 
 
-@bot_commands.register("hello")
+@bot_commands.register(
+    "hello",
+    description="Say hi! A quick way to check if I'm awake and ready to help.",
+)
 def say_hello() -> None:
     print("How can I help you?")
+
+
+@bot_commands.register(
+    "commands",
+    description="Show detailed descriptions of available assistant commands.",
+)
+def show_commands() -> None:
+    for command in bot_commands.get_primary_commands():
+        console.print(command)
 
 
 # ================================================
@@ -20,19 +31,37 @@ def say_hello() -> None:
 # ================================================
 
 
-@bot_commands.register("add", args=["name"], optional_args=["phone number"])
+@bot_commands.register(
+    "add",
+    args=["name"],
+    optional_args=["phone number", "email", "address", "birthday"],
+    description=(
+        "Create a new contact and optionally attach the first phone number, email, "
+        "address, and birthday."
+    ),
+)
 def add_contact(args: CommandArgs, context: CommandContext) -> None:
-    name, phone = args
+    name, phone, email, address, birthday = args
     contacts_service = context["contacts_service"]
 
     try:
-        contacts_service.create_contact(name, phone=phone)
+        contacts_service.create_contact(
+            name,
+            phone=phone,
+            email=email,
+            address=address,
+            birthday=birthday,
+        )
         print("Contact added.")
     except ContactAlreadyExistsError:
         print("Contact already exists.")
 
 
-@bot_commands.register("change-name", args=["old name", "new name"])
+@bot_commands.register(
+    "change-name",
+    args=["old name", "new name"],
+    description="Rename an existing contact.",
+)
 def change_name(args: CommandArgs, context: CommandContext) -> None:
     old_name, new_name = args
     contacts_service = context["contacts_service"]
@@ -49,7 +78,11 @@ def change_name(args: CommandArgs, context: CommandContext) -> None:
         print("Contact with new name already exists.")
 
 
-@bot_commands.register("add-phone", args=["name", "phone number"])
+@bot_commands.register(
+    "add-phone",
+    args=["name", "phone number"],
+    description="Add another phone number to an existing contact.",
+)
 def add_phone(args: CommandArgs, context: CommandContext) -> None:
     name, phone = args
     contacts_service = context["contacts_service"]
@@ -64,6 +97,7 @@ def add_phone(args: CommandArgs, context: CommandContext) -> None:
 @bot_commands.register(
     "change-phone",
     args=["name", "old phone number", "new phone number"],
+    description="Replace one of the contact's saved phone numbers with a new one.",
 )
 def change_phone(args: CommandArgs, context: CommandContext) -> None:
     name, old_phone, new_phone = args
@@ -77,7 +111,11 @@ def change_phone(args: CommandArgs, context: CommandContext) -> None:
 
 
 # TODO: update from 'name' to 'contact name' for clarity (in all places)
-@bot_commands.register("show-phone", args=["name"])
+@bot_commands.register(
+    "show-phone",
+    args=["name"],
+    description="List all phone numbers saved for a contact.",
+)
 def show_phone(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -94,7 +132,11 @@ def show_phone(args: CommandArgs, context: CommandContext) -> None:
     print("\n".join(str(phone) for phone in contact.phones))
 
 
-@bot_commands.register("delete-phone", args=["name", "phone number"])
+@bot_commands.register(
+    "delete-phone",
+    args=["name", "phone number"],
+    description="Delete a specific phone number from a contact.",
+)
 def delete_phone(args: CommandArgs, context: CommandContext) -> None:
     name, phone = args
     contacts_service = context["contacts_service"]
@@ -106,7 +148,11 @@ def delete_phone(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("add-phone-label", args=["name", "phone number", "label"])
+@bot_commands.register(
+    "add-phone-label",
+    args=["name", "phone number", "label"],
+    description="Assign a label to one of the contact's phone numbers.",
+)
 def add_phone_label(args: CommandArgs, context: CommandContext) -> None:
     name, phone, label = args
     contacts_service = context["contacts_service"]
@@ -118,7 +164,11 @@ def add_phone_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("delete-phone-label", args=["name", "phone number"])
+@bot_commands.register(
+    "delete-phone-label",
+    args=["name", "phone number"],
+    description="Remove the label from one of the contact's phone numbers.",
+)
 def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
     name, phone = args
     contacts_service = context["contacts_service"]
@@ -130,7 +180,10 @@ def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("contacts")
+@bot_commands.register(
+    "contacts",
+    description="Show all saved contacts with their stored details.",
+)
 def show_contacts(context: CommandContext) -> None:
     contacts = context["contacts"]
     if not contacts:
@@ -140,7 +193,10 @@ def show_contacts(context: CommandContext) -> None:
     print("\n".join(str(contact) for contact in contacts.values()))
 
 
-@bot_commands.register("favorite-contacts")
+@bot_commands.register(
+    "favorite-contacts",
+    description="Show only contacts marked as favorites.",
+)
 def show_favorite_contacts(context: CommandContext) -> None:
     contacts = context["contacts"]
     if not contacts:
@@ -155,7 +211,11 @@ def show_favorite_contacts(context: CommandContext) -> None:
     print("\n".join(str(contact) for contact in favorite_contacts))
 
 
-@bot_commands.register("add-birthday", args=["name", "birthday"])
+@bot_commands.register(
+    "add-birthday",
+    args=["name", "birthday"],
+    description="Set or update a contact's birthday.",
+)
 def add_birthday(args: CommandArgs, context: CommandContext) -> None:
     name, birthday = args
     contacts_service = context["contacts_service"]
@@ -170,7 +230,11 @@ def add_birthday(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("show-birthday", args=["name"])
+@bot_commands.register(
+    "show-birthday",
+    args=["name"],
+    description="Display the saved birthday for a contact.",
+)
 def show_birthday(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -182,7 +246,11 @@ def show_birthday(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("delete-birthday", args=["name"])
+@bot_commands.register(
+    "delete-birthday",
+    args=["name"],
+    description="Remove the saved birthday from a contact.",
+)
 def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -194,7 +262,11 @@ def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("add-email", args=["name", "email"])
+@bot_commands.register(
+    "add-email",
+    args=["name", "email"],
+    description="Add an email address to a contact.",
+)
 def add_email(args: CommandArgs, context: CommandContext) -> None:
     name, email = args
     contacts_service = context["contacts_service"]
@@ -206,7 +278,11 @@ def add_email(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("change-email", args=["name", "old email", "new email"])
+@bot_commands.register(
+    "change-email",
+    args=["name", "old email", "new email"],
+    description="Replace one saved email address with another.",
+)
 def change_email(args: CommandArgs, context: CommandContext) -> None:
     name, old_email, new_email = args
     contacts_service = context["contacts_service"]
@@ -222,7 +298,11 @@ def change_email(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("show-email", args=["name"])
+@bot_commands.register(
+    "show-email",
+    args=["name"],
+    description="List all email addresses saved for a contact.",
+)
 def show_email(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -239,7 +319,11 @@ def show_email(args: CommandArgs, context: CommandContext) -> None:
     print("\n".join(str(email) for email in contact.emails))
 
 
-@bot_commands.register("delete-email", args=["name", "email"])
+@bot_commands.register(
+    "delete-email",
+    args=["name", "email"],
+    description="Delete an email address from a contact.",
+)
 def delete_email(args: CommandArgs, context: CommandContext) -> None:
     name, email = args
     contacts_service = context["contacts_service"]
@@ -251,7 +335,11 @@ def delete_email(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("add-email-label", args=["name", "email", "label"])
+@bot_commands.register(
+    "add-email-label",
+    args=["name", "email", "label"],
+    description="Assign a label to one of the contact's email addresses.",
+)
 def add_email_label(args: CommandArgs, context: CommandContext) -> None:
     name, email, label = args
     contacts_service = context["contacts_service"]
@@ -263,7 +351,11 @@ def add_email_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("delete-email-label", args=["name", "email"])
+@bot_commands.register(
+    "delete-email-label",
+    args=["name", "email"],
+    description="Remove the label from one of the contact's email addresses.",
+)
 def delete_email_label(args: CommandArgs, context: CommandContext) -> None:
     name, email = args
     contacts_service = context["contacts_service"]
@@ -275,7 +367,11 @@ def delete_email_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("add-address", args=["name", "address"])
+@bot_commands.register(
+    "add-address",
+    args=["name", "address"],
+    description="Add a postal address to a contact.",
+)
 def add_address(args: CommandArgs, context: CommandContext) -> None:
     name, address = args
     contacts_service = context["contacts_service"]
@@ -287,7 +383,11 @@ def add_address(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("change-address", args=["name", "old address", "new address"])
+@bot_commands.register(
+    "change-address",
+    args=["name", "old address", "new address"],
+    description="Replace one saved address with another.",
+)
 def change_address(args: CommandArgs, context: CommandContext) -> None:
     name, old_address, new_address = args
     contacts_service = context["contacts_service"]
@@ -303,7 +403,11 @@ def change_address(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("show-address", args=["name"])
+@bot_commands.register(
+    "show-address",
+    args=["name"],
+    description="List all addresses saved for a contact.",
+)
 def show_address(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -320,7 +424,11 @@ def show_address(args: CommandArgs, context: CommandContext) -> None:
     print("\n".join(str(address) for address in contact.addresses))
 
 
-@bot_commands.register("delete-address", args=["name", "address"])
+@bot_commands.register(
+    "delete-address",
+    args=["name", "address"],
+    description="Delete an address from a contact.",
+)
 def delete_address(args: CommandArgs, context: CommandContext) -> None:
     name, address = args
     contacts_service = context["contacts_service"]
@@ -332,7 +440,11 @@ def delete_address(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("add-address-label", args=["name", "address", "label"])
+@bot_commands.register(
+    "add-address-label",
+    args=["name", "address", "label"],
+    description="Assign a label to one of the contact's addresses.",
+)
 def add_address_label(args: CommandArgs, context: CommandContext) -> None:
     name, address, label = args
     contacts_service = context["contacts_service"]
@@ -344,7 +456,11 @@ def add_address_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("delete-address-label", args=["name", "address"])
+@bot_commands.register(
+    "delete-address-label",
+    args=["name", "address"],
+    description="Remove the label from one of the contact's addresses.",
+)
 def delete_address_label(args: CommandArgs, context: CommandContext) -> None:
     name, address = args
     contacts_service = context["contacts_service"]
@@ -356,7 +472,10 @@ def delete_address_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("birthdays")
+@bot_commands.register(
+    "birthdays",
+    description="Show upcoming birthdays and their congratulation dates.",
+)
 def birthdays(context: CommandContext) -> None:
     contacts = context["contacts"]
 
@@ -381,7 +500,11 @@ def birthdays(context: CommandContext) -> None:
     )
 
 
-@bot_commands.register("delete", args=["name"])
+@bot_commands.register(
+    "delete",
+    args=["name"],
+    description="Delete a contact entirely.",
+)
 def delete_contact(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -393,7 +516,11 @@ def delete_contact(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("favorite", args=["name"])
+@bot_commands.register(
+    "favorite",
+    args=["name"],
+    description="Mark a contact as favorite.",
+)
 def favorite_contact(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -405,7 +532,11 @@ def favorite_contact(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("unfavorite", args=["name"])
+@bot_commands.register(
+    "unfavorite",
+    args=["name"],
+    description="Remove a contact from favorites.",
+)
 def unfavorite_contact(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -422,7 +553,11 @@ def unfavorite_contact(args: CommandArgs, context: CommandContext) -> None:
 # ================================================
 
 
-@bot_commands.register("note", args=["name"])
+@bot_commands.register(
+    "note",
+    args=["name"],
+    description="Open the note editor to create or update a note.",
+)
 def edit_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     notes_service = context["notes_service"]
@@ -444,7 +579,10 @@ def edit_note(args: CommandArgs, context: CommandContext) -> None:
         print("Changes discarded.")
 
 
-@bot_commands.register("notes")
+@bot_commands.register(
+    "notes",
+    description="Show all saved notes.",
+)
 def show_notes(context: CommandContext) -> None:
     notes = context["notes"]
     if not notes:
@@ -453,7 +591,11 @@ def show_notes(context: CommandContext) -> None:
     print("\n".join(str(note) for note in notes.values()))
 
 
-@bot_commands.register("show-note", args=["name"])
+@bot_commands.register(
+    "show-note",
+    args=["name"],
+    description="Display the full content of a note.",
+)
 def show_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     notes_service = context["notes_service"]
@@ -466,7 +608,11 @@ def show_note(args: CommandArgs, context: CommandContext) -> None:
     console.print(note.content)
 
 
-@bot_commands.register("add-note-tag", args=["name", "tag"])
+@bot_commands.register(
+    "add-note-tag",
+    args=["name", "tag"],
+    description="Attach a tag to a note.",
+)
 def add_note_tag(args: CommandArgs, context: CommandContext) -> None:
     name, tag = args
     notes_service = context["notes_service"]
@@ -481,7 +627,11 @@ def add_note_tag(args: CommandArgs, context: CommandContext) -> None:
         print("Note doesn't exist.")
 
 
-@bot_commands.register("delete-note-tag", args=["name", "tag"])
+@bot_commands.register(
+    "delete-note-tag",
+    args=["name", "tag"],
+    description="Remove a tag from a note.",
+)
 def delete_note_tag(args: CommandArgs, context: CommandContext) -> None:
     name, tag = args
     notes_service = context["notes_service"]
@@ -496,7 +646,11 @@ def delete_note_tag(args: CommandArgs, context: CommandContext) -> None:
         print("Note doesn't exist.")
 
 
-@bot_commands.register("delete-note", args=["name"])
+@bot_commands.register(
+    "delete-note",
+    args=["name"],
+    description="Delete a note.",
+)
 def delete_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     notes_service = context["notes_service"]
@@ -508,7 +662,11 @@ def delete_note(args: CommandArgs, context: CommandContext) -> None:
         print("Note doesn't exist.")
 
 
-@bot_commands.register("rename-note", args=["old name", "new name"])
+@bot_commands.register(
+    "rename-note",
+    args=["old name", "new name"],
+    description="Rename an existing note.",
+)
 def rename_note(args: CommandArgs, context: CommandContext) -> None:
     old_name, new_name = args
     notes_service = context["notes_service"]
@@ -525,7 +683,11 @@ def rename_note(args: CommandArgs, context: CommandContext) -> None:
         print("Note with new name already exists.")
 
 
-@bot_commands.register("search-notes", args=["query"])
+@bot_commands.register(
+    "search-notes",
+    args=["query"],
+    description="Search note titles and contents using fuzzy matching.",
+)
 def search_notes(args: CommandArgs, context: CommandContext) -> None:
     query = args[0]
     notes = context["notes"]
@@ -580,7 +742,11 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
             console.print(content_snippet)
 
 
-@bot_commands.register("search-notes-by-tag", args=["tag"])
+@bot_commands.register(
+    "search-notes-by-tag",
+    args=["tag"],
+    description="Find all notes that have the given tag.",
+)
 def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
     tag = args[0]
     notes = context["notes"]
@@ -598,7 +764,10 @@ def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
     print("\n".join(str(note) for note in found_notes))
 
 
-@bot_commands.register("note-tags")
+@bot_commands.register(
+    "note-tags",
+    description="List all note tags with their usage counts.",
+)
 def list_note_tags(context: CommandContext) -> None:
     notes = context["notes"]
     notes_service = context["notes_service"]
@@ -619,7 +788,13 @@ class StopCommandsLoop(Exception):
     pass
 
 
-@bot_commands.register("exit", "close", "quit", "bye")
+@bot_commands.register(
+    "bye",
+    "exit",
+    "close",
+    "quit",
+    description="Exit the interactive assistant loop.",
+)
 def say_goodbye() -> None:
     print("Good bye!")
     raise StopCommandsLoop
