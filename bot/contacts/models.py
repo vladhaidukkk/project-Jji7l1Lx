@@ -1,8 +1,11 @@
 import pickle
+import re
 from collections import UserDict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Self
+
+EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
 
 class Field:
@@ -47,6 +50,18 @@ class Birthday(Field):
         return self.value.strftime("%Y.%m.%d")
 
 
+class Email(Field):
+    def __init__(self, value: str) -> None:
+        # Email validation
+        value = value.strip()
+        if not value:
+            raise ValueError("Email cannot be empty")
+        if not EMAIL_PATTERN.fullmatch(value):
+            raise ValueError("Invalid email format")
+
+        super().__init__(value)
+
+
 class Address(Field):
     def __init__(self, value: str) -> None:
         # Address validation
@@ -61,6 +76,7 @@ class ContactRecord:
         self.name = Name(name)
         self.phones: list[Phone] = []
         self.birthday: Birthday | None = None
+        self.email: Email | None = None
         self.address: Address | None = None
 
     def add_phone(self, phone: str) -> None:
@@ -102,6 +118,9 @@ class ContactRecord:
 
     def add_birthday(self, birthday: str) -> None:
         self.birthday = Birthday(birthday)
+
+    def add_email(self, email: str) -> None:
+        self.email = Email(email)
 
     def add_address(self, address: str) -> None:
         self.address = Address(address)

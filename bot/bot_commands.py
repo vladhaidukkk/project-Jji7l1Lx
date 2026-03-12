@@ -15,9 +15,9 @@ def say_hello() -> None:
     print("How can I help you?")
 
 
-@bot_commands.register("add", args=["name"], optional_args=["phone number", "address"])
+@bot_commands.register("add", args=["name"], optional_args=["phone number"])
 def add_contact(args: CommandArgs, context: CommandContext) -> None:
-    name, phone, address = args
+    name, phone = args
     contacts_service = context["contacts_service"]
 
     try:
@@ -116,6 +116,33 @@ def show_birthday(args: CommandArgs, context: CommandContext) -> None:
     contact = contacts_service.get_contact(name)
     if contact:
         print(contact.birthday or "Contact doesn't have a birthday set.")
+    else:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("add-email", args=["name", "email"])
+def add_email(args: CommandArgs, context: CommandContext) -> None:
+    name, email = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        match contacts_service.add_email(name, email=email):
+            case "added":
+                print("Email added.")
+            case "updated":
+                print("Email updated.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("show-email", args=["name"])
+def show_email(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    contact = contacts_service.get_contact(name)
+    if contact:
+        print(contact.email or "Contact doesn't have an email set.")
     else:
         print("Contact doesn't exist.")
 
