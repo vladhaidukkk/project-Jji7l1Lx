@@ -81,40 +81,26 @@ class ContactsService:
 
         contact.remove_birthday()
 
-    def add_email(self, name: str, *, email: str) -> None:
+    def add_email(
+        self,
+        name: str,
+        *,
+        email: str,
+    ) -> Literal["added", "updated"]:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
+        had_email = contact.email is not None
         contact.add_email(email)
+        return "updated" if had_email else "added"
 
-    def delete_email(self, name: str, *, email: str) -> None:
+    def delete_email(self, name: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        contact.remove_email(email)
-
-    def change_email(self, name: str, *, old_email: str, new_email: str) -> None:
-        contact = self.__contacts.find(name)
-        if not contact:
-            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
-
-        contact.edit_email(old_email, new_email)
-
-    def add_email_label(self, name: str, *, email: str, label: str) -> None:
-        contact = self.__contacts.find(name)
-        if not contact:
-            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
-
-        contact.add_email_label(email, label)
-
-    def delete_email_label(self, name: str, *, email: str) -> None:
-        contact = self.__contacts.find(name)
-        if not contact:
-            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
-
-        contact.remove_email_label(email)
+        contact.remove_email()
 
     def add_address(
         self,
@@ -160,7 +146,7 @@ class ContactsService:
         *,
         phone: tuple[str, str] | None = None,
         birthday: str | None = None,
-        email: tuple[str, str] | None = None,
+        email: str | None = None,
         address: str | None = None,
     ) -> None:
         contact = self.__contacts.find(name)
@@ -172,7 +158,7 @@ class ContactsService:
         if birthday:
             contact.add_birthday(birthday)
         if email:
-            contact.edit_email(email[0], email[1])
+            contact.add_email(email)
         if address:
             contact.add_address(address)
 

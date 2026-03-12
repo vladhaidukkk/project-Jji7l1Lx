@@ -134,8 +134,7 @@ def _print_contacts(contact_records: list) -> None:
     print(
         "\n".join(
             f"{'* ' if c.is_favorite else ''}{c.name}: "
-            f"{', '.join(str(phone) for phone in c.phones) if c.phones else '-'}; "
-            f"{', '.join(str(email) for email in c.emails) if c.emails else '-'}"
+            f"{', '.join(str(phone) for phone in c.phones) if c.phones else '-'}"
             for c in contact_records
         )
     )
@@ -211,24 +210,11 @@ def add_email(args: CommandArgs, context: CommandContext) -> None:
     contacts_service = context["contacts_service"]
 
     try:
-        contacts_service.add_email(name, email=email)
-        print("Email added.")
-    except ContactNotFoundError:
-        print("Contact doesn't exist.")
-
-
-@bot_commands.register("change-email", args=["name", "old email", "new email"])
-def change_email(args: CommandArgs, context: CommandContext) -> None:
-    name, old_email, new_email = args
-    contacts_service = context["contacts_service"]
-
-    try:
-        contacts_service.change_email(
-            name,
-            old_email=old_email,
-            new_email=new_email,
-        )
-        print("Email updated.")
+        match contacts_service.add_email(name, email=email):
+            case "added":
+                print("Email added.")
+            case "updated":
+                print("Email updated.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
 
@@ -239,49 +225,20 @@ def show_email(args: CommandArgs, context: CommandContext) -> None:
     contacts_service = context["contacts_service"]
 
     contact = contacts_service.get_contact(name)
-    if not contact:
+    if contact:
+        print(contact.email or "Contact doesn't have an email set.")
+    else:
         print("Contact doesn't exist.")
-        return
-
-    if not contact.emails:
-        print("Contact doesn't have an email set.")
-        return
-
-    print("\n".join(str(email) for email in contact.emails))
 
 
-@bot_commands.register("delete-email", args=["name", "email"])
+@bot_commands.register("delete-email", args=["name"])
 def delete_email(args: CommandArgs, context: CommandContext) -> None:
-    name, email = args
+    name = args[0]
     contacts_service = context["contacts_service"]
 
     try:
-        contacts_service.delete_email(name, email=email)
+        contacts_service.delete_email(name)
         print("Email deleted.")
-    except ContactNotFoundError:
-        print("Contact doesn't exist.")
-
-
-@bot_commands.register("add-email-label", args=["name", "email", "label"])
-def add_email_label(args: CommandArgs, context: CommandContext) -> None:
-    name, email, label = args
-    contacts_service = context["contacts_service"]
-
-    try:
-        contacts_service.add_email_label(name, email=email, label=label)
-        print("Email label added.")
-    except ContactNotFoundError:
-        print("Contact doesn't exist.")
-
-
-@bot_commands.register("delete-email-label", args=["name", "email"])
-def delete_email_label(args: CommandArgs, context: CommandContext) -> None:
-    name, email = args
-    contacts_service = context["contacts_service"]
-
-    try:
-        contacts_service.delete_email_label(name, email=email)
-        print("Email label deleted.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
 
