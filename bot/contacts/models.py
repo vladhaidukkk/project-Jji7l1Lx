@@ -303,12 +303,13 @@ class ContactRecord:
     def unmark_favorite(self) -> None:
         self.is_favorite = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"Contact name: {self.name.value}, "
-            f"phones: {'; '.join(str(p) for p in self.phones)}, "
-            f"emails: {'; '.join(str(e) for e in self.emails)}, "
-            f"addresses: {'; '.join(str(a) for a in self.addresses)}"
+            f"{'* ' if self.is_favorite else ''}{self.name}: "
+            f"phones: {', '.join(str(p) for p in self.phones) if self.phones else '-'}; "
+            f"emails: {', '.join(str(e) for e in self.emails) if self.emails else '-'}; "
+            f"addresses: {', '.join(str(a) for a in self.addresses) if self.addresses else '-'}; "
+            f"birthday: {self.birthday if self.birthday else '-'}"
         )
 
 

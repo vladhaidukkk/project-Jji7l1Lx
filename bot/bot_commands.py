@@ -130,18 +130,6 @@ def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-def _print_contacts(contact_records: list) -> None:
-    print(
-        "\n".join(
-            f"{'* ' if c.is_favorite else ''}{c.name}: "
-            f"phones: {', '.join(str(phone) for phone in c.phones) if c.phones else '-'}; "
-            f"emails: {', '.join(str(email) for email in c.emails) if c.emails else '-'}; "
-            f"addresses: {', '.join(str(address) for address in c.addresses) if c.addresses else '-'}"
-            for c in contact_records
-        )
-    )
-
-
 @bot_commands.register("contacts")
 def show_contacts(context: CommandContext) -> None:
     contacts = context["contacts"]
@@ -149,7 +137,7 @@ def show_contacts(context: CommandContext) -> None:
         print("No contacts.")
         return
 
-    _print_contacts(list(contacts.values()))
+    print("\n".join(str(contact) for contact in contacts.values()))
 
 
 @bot_commands.register("favorite-contacts")
@@ -164,7 +152,7 @@ def show_favorite_contacts(context: CommandContext) -> None:
         print("No favorite contacts.")
         return
 
-    _print_contacts(favorite_contacts)
+    print("\n".join(str(contact) for contact in favorite_contacts))
 
 
 @bot_commands.register("add-birthday", args=["name", "birthday"])
@@ -456,20 +444,13 @@ def edit_note(args: CommandArgs, context: CommandContext) -> None:
         print("Changes discarded.")
 
 
-def _format_note(note: Note) -> str:
-    tags = " ".join(f"[{tag}]" for tag in note.tags)
-    content_preview = note.preview(30)
-    prefix = f"{note.name} {tags}".strip()
-    return f"{prefix}: {content_preview}" if content_preview else prefix
-
-
 @bot_commands.register("notes")
 def show_notes(context: CommandContext) -> None:
     notes = context["notes"]
     if not notes:
         print("No notes.")
         return
-    print("\n".join(_format_note(note) for note in notes.values()))
+    print("\n".join(str(note) for note in notes.values()))
 
 
 @bot_commands.register("show-note", args=["name"])
@@ -614,7 +595,7 @@ def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
         print(f"No notes found with tag '{tag}'.")
         return
 
-    print("\n".join(_format_note(note) for note in found_notes))
+    print("\n".join(str(note) for note in found_notes))
 
 
 @bot_commands.register("note-tags")
