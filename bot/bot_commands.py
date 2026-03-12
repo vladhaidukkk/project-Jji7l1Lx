@@ -194,6 +194,19 @@ def show_notes(context: CommandContext) -> None:
     print("\n".join(format_note(note) for note in notes.values()))
 
 
+@bot_commands.register("show-note", args=["name"])
+def show_note(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    notes_service = context["notes_service"]
+
+    note = notes_service.get_note(name)
+    if not note:
+        print("Note doesn't exist.")
+        return
+
+    console.print(note.content)
+
+
 @bot_commands.register("delete-note", args=["name"])
 def delete_note(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
