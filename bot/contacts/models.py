@@ -22,7 +22,7 @@ class Name(Field):
 
 
 class Phone(Field):
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, label: str | None = None) -> None:
         # Phone number validation
         value = value.strip()
         if not value:
@@ -33,6 +33,18 @@ class Phone(Field):
             raise ValueError("Phone number must contain only digits")
 
         super().__init__(value)
+        self.label = self._normalize_label(label) if label else None
+
+    @staticmethod
+    def _normalize_label(label: str) -> str:
+        label = label.strip()
+        if not label:
+            raise ValueError("Phone label cannot be empty")
+
+        return label
+
+    def __str__(self) -> str:
+        return f"{self.value} ({self.label})" if self.label else self.value
 
 
 class Birthday(Field):
@@ -48,7 +60,7 @@ class Birthday(Field):
 
 
 class Email(Field):
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, label: str | None = None) -> None:
         # Email validation
         value = value.strip()
         if not value:
@@ -57,16 +69,40 @@ class Email(Field):
             raise ValueError("Invalid email format")
 
         super().__init__(value)
+        self.label = self._normalize_label(label) if label else None
+
+    @staticmethod
+    def _normalize_label(label: str) -> str:
+        label = label.strip()
+        if not label:
+            raise ValueError("Email label cannot be empty")
+
+        return label
+
+    def __str__(self) -> str:
+        return f"{self.value} ({self.label})" if self.label else self.value
 
 
 class Address(Field):
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, label: str | None = None) -> None:
         # Address validation
         value = value.strip()
         if not value:
             raise ValueError("Address cannot be empty")
 
         super().__init__(value)
+        self.label = self._normalize_label(label) if label else None
+
+    @staticmethod
+    def _normalize_label(label: str) -> str:
+        label = label.strip()
+        if not label:
+            raise ValueError("Address label cannot be empty")
+
+        return label
+
+    def __str__(self) -> str:
+        return f"{self.value} ({self.label})" if self.label else self.value
 
 
 class ContactRecord:
@@ -74,8 +110,8 @@ class ContactRecord:
         self.name = Name(name)
         self.phones: list[Phone] = []
         self.birthday: Birthday | None = None
-        self.email: Email | None = None
-        self.address: Address | None = None
+        self.emails: list[Email] = []
+        self.addresses: list[Address] = []
         self.is_favorite = False
 
     def add_phone(self, phone: str) -> None:
@@ -93,17 +129,38 @@ class ContactRecord:
         del self.phones[phone_idx]
 
     def edit_phone(self, old_phone: str, new_phone: str) -> None:
+        if old_phone == new_phone:
+            raise ValueError("New phone number must be different from the current one")
+
         phone_idx = self._find_phone_index(old_phone)
         if phone_idx is None:
             raise ValueError(f"Phone number '{old_phone}' does not exist")
 
-        self.phones[phone_idx] = Phone(new_phone)
+        existing_phone_idx = self._find_phone_index(new_phone)
+        if existing_phone_idx is not None:
+            raise ValueError(f"Phone number '{new_phone}' already exists")
 
-    def replace_phone(self, phone_index: int, new_phone: str) -> None:
-        if phone_index > len(self.phones) - 1:
-            raise ValueError(f"Phone number at position {phone_index} does not exist")
+        self.phones[phone_idx] = Phone(
+            new_phone,
+            label=self.phones[phone_idx].label,
+        )
 
-        self.phones[phone_index] = Phone(new_phone)
+    def add_phone_label(self, phone: str, label: str) -> None:
+        phone_record = self.find_phone(phone)
+        if phone_record is None:
+            raise ValueError(f"Phone number '{phone}' does not exist")
+
+        phone_record.label = Phone._normalize_label(label)
+
+    def remove_phone_label(self, phone: str) -> None:
+        phone_record = self.find_phone(phone)
+        if phone_record is None:
+            raise ValueError(f"Phone number '{phone}' does not exist")
+
+        if phone_record.label is None:
+            raise ValueError(f"Phone number '{phone}' does not have a label")
+
+        phone_record.label = None
 
     def find_phone(self, phone: str) -> Phone | None:
         for p in self.phones:
@@ -125,22 +182,120 @@ class ContactRecord:
         self.birthday = None
 
     def add_email(self, email: str) -> None:
-        self.email = Email(email)
+        email_idx = self._find_email_index(email)
+        if email_idx is not None:
+            raise ValueError(f"Email '{email}' already exists")
 
-    def remove_email(self) -> None:
-        if self.email is None:
-            raise ValueError("Email is not set")
+        self.emails.append(Email(email))
 
-        self.email = None
+    def remove_email(self, email: str) -> None:
+        email_idx = self._find_email_index(email)
+        if email_idx is None:
+            raise ValueError(f"Email '{email}' does not exist")
+
+        del self.emails[email_idx]
+
+    def edit_email(self, old_email: str, new_email: str) -> None:
+        if old_email == new_email:
+            raise ValueError("New email must be different from the current one")
+
+        email_idx = self._find_email_index(old_email)
+        if email_idx is None:
+            raise ValueError(f"Email '{old_email}' does not exist")
+
+        existing_email_idx = self._find_email_index(new_email)
+        if existing_email_idx is not None:
+            raise ValueError(f"Email '{new_email}' already exists")
+
+        self.emails[email_idx] = Email(
+            new_email,
+            label=self.emails[email_idx].label,
+        )
+
+    def add_email_label(self, email: str, label: str) -> None:
+        email_record = self.find_email(email)
+        if email_record is None:
+            raise ValueError(f"Email '{email}' does not exist")
+
+        email_record.label = Email._normalize_label(label)
+
+    def remove_email_label(self, email: str) -> None:
+        email_record = self.find_email(email)
+        if email_record is None:
+            raise ValueError(f"Email '{email}' does not exist")
+
+        if email_record.label is None:
+            raise ValueError(f"Email '{email}' does not have a label")
+
+        email_record.label = None
+
+    def find_email(self, email: str) -> Email | None:
+        for e in self.emails:
+            if e.value == email:
+                return e
+
+    def _find_email_index(self, email: str) -> int | None:
+        for i, e in enumerate(self.emails):
+            if e.value == email:
+                return i
 
     def add_address(self, address: str) -> None:
-        self.address = Address(address)
+        address_idx = self._find_address_index(address)
+        if address_idx is not None:
+            raise ValueError(f"Address '{address}' already exists")
 
-    def remove_address(self) -> None:
-        if self.address is None:
-            raise ValueError("Address is not set")
+        self.addresses.append(Address(address))
 
-        self.address = None
+    def remove_address(self, address: str) -> None:
+        address_idx = self._find_address_index(address)
+        if address_idx is None:
+            raise ValueError(f"Address '{address}' does not exist")
+
+        del self.addresses[address_idx]
+
+    def edit_address(self, old_address: str, new_address: str) -> None:
+        if old_address == new_address:
+            raise ValueError("New address must be different from the current one")
+
+        address_idx = self._find_address_index(old_address)
+        if address_idx is None:
+            raise ValueError(f"Address '{old_address}' does not exist")
+
+        existing_address_idx = self._find_address_index(new_address)
+        if existing_address_idx is not None:
+            raise ValueError(f"Address '{new_address}' already exists")
+
+        self.addresses[address_idx] = Address(
+            new_address,
+            label=self.addresses[address_idx].label,
+        )
+
+    def add_address_label(self, address: str, label: str) -> None:
+        address_record = self.find_address(address)
+        if address_record is None:
+            raise ValueError(f"Address '{address}' does not exist")
+
+        address_record.label = Address._normalize_label(label)
+
+    def remove_address_label(self, address: str) -> None:
+        address_record = self.find_address(address)
+        if address_record is None:
+            raise ValueError(f"Address '{address}' does not exist")
+
+        if address_record.label is None:
+            raise ValueError(f"Address '{address}' does not have a label")
+
+        address_record.label = None
+
+    def find_address(self, address: str) -> Address | None:
+        for a in self.addresses:
+            if a.value == address:
+                return a
+
+    def _find_address_index(self, address: str) -> int | None:
+        for i, a in enumerate(self.addresses):
+            if a.value == address:
+                return i
 
     def mark_favorite(self) -> None:
         self.is_favorite = True
@@ -148,8 +303,14 @@ class ContactRecord:
     def unmark_favorite(self) -> None:
         self.is_favorite = False
 
-    def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+    def __str__(self) -> str:
+        return (
+            f"{'* ' if self.is_favorite else ''}{self.name}: "
+            f"phones: {', '.join(str(p) for p in self.phones) if self.phones else '-'}; "
+            f"emails: {', '.join(str(e) for e in self.emails) if self.emails else '-'}; "
+            f"addresses: {', '.join(str(a) for a in self.addresses) if self.addresses else '-'}; "
+            f"birthday: {self.birthday if self.birthday else '-'}"
+        )
 
 
 class ContactsBook(UserDict):

@@ -18,7 +18,13 @@ class NoteName(Field):
 
 
 class NoteContent(Field):
-    pass
+    def preview(self, length: int = 50) -> str:
+        preview_text = self.value.replace("\n", " ").strip()
+        if len(preview_text) > length:
+            if length > 3:
+                return preview_text[: length - 3] + "..."
+            return preview_text[:length]
+        return preview_text
 
 
 class NoteTag(Field):
@@ -42,14 +48,6 @@ class Note:
         self.content = NoteContent(content)
         self.tags = [NoteTag(tag) for tag in self.__dedup_tags(tags or [])]
 
-    def preview(self, length: int = 50) -> str:
-        preview_text = self.content.value.replace("\n", " ").strip()
-        if len(preview_text) > length:
-            if length > 3:
-                return preview_text[: length - 3] + "..."
-            return preview_text[:length]
-        return preview_text
-
     def add_tags(self, tags: list[str]) -> list[str]:
         added_tags: list[str] = []
         existing_tags = {tag.value for tag in self.tags}
@@ -72,6 +70,12 @@ class Note:
     @staticmethod
     def __dedup_tags(tags: list[str]) -> list[str]:
         return list(dict.fromkeys(tags))
+
+    def __str__(self) -> str:
+        tags = " ".join(f"[{tag}]" for tag in self.tags)
+        content_preview = self.content.preview(30)
+        prefix = f"{self.name} {tags}".strip()
+        return f"{prefix}: {content_preview}" if content_preview else prefix
 
 
 class NotesBook(UserDict):

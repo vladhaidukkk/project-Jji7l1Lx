@@ -32,45 +32,6 @@ class ContactsService:
             contact.add_address(address)
         self.__contacts.add_record(contact)
 
-    def add_contact(
-        self,
-        name: str,
-        *,
-        phone: str | None = None,
-        birthday: str | None = None,
-        email: str | None = None,
-        address: str | None = None,
-    ) -> str:
-        contact = self.__contacts.find(name)
-        if not contact:
-            self.create_contact(
-                name,
-                phone=phone,
-                birthday=birthday,
-                email=email,
-                address=address,
-            )
-            return "added"
-
-        updated = []
-        if not contact.phones and phone:
-            self.add_phone(name, phone=phone)
-            updated.append("phone")
-        if not contact.birthday and birthday:
-            self.add_birthday(name, birthday=birthday)
-            updated.append("birthday")
-        if not contact.email and email:
-            self.add_email(name, email=email)
-            updated.append("email")
-        if not contact.address and address:
-            self.add_address(name, address=address)
-            updated.append("address")
-
-        if updated:
-            return f"updated:{'|'.join(updated)}"
-
-        raise ContactAlreadyExistsError(f"Contact '{name}' aready exists")
-
     def add_phone(self, name: str, *, phone: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
@@ -84,6 +45,20 @@ class ContactsService:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
         contact.remove_phone(phone)
+
+    def add_phone_label(self, name: str, *, phone: str, label: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.add_phone_label(phone, label)
+
+    def delete_phone_label(self, name: str, *, phone: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.remove_phone_label(phone)
 
     def add_birthday(
         self,
@@ -106,47 +81,81 @@ class ContactsService:
 
         contact.remove_birthday()
 
-    def add_email(
-        self,
-        name: str,
-        *,
-        email: str,
-    ) -> Literal["added", "updated"]:
+    def add_email(self, name: str, *, email: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        had_email = contact.email is not None
         contact.add_email(email)
-        return "updated" if had_email else "added"
 
-    def delete_email(self, name: str) -> None:
+    def delete_email(self, name: str, *, email: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        contact.remove_email()
+        contact.remove_email(email)
 
-    def add_address(
+    def change_email(self, name: str, *, old_email: str, new_email: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.edit_email(old_email, new_email)
+
+    def add_email_label(self, name: str, *, email: str, label: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.add_email_label(email, label)
+
+    def delete_email_label(self, name: str, *, email: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.remove_email_label(email)
+
+    def add_address(self, name: str, *, address: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.add_address(address)
+
+    def delete_address(self, name: str, *, address: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.remove_address(address)
+
+    def change_address(
         self,
         name: str,
         *,
-        address: str,
-    ) -> Literal["added", "updated"]:
+        old_address: str,
+        new_address: str,
+    ) -> None:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        had_address = contact.address is not None
-        contact.add_address(address)
-        return "updated" if had_address else "added"
+        contact.edit_address(old_address, new_address)
 
-    def delete_address(self, name: str) -> None:
+    def add_address_label(self, name: str, *, address: str, label: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
-        contact.remove_address()
+        contact.add_address_label(address, label)
+
+    def delete_address_label(self, name: str, *, address: str) -> None:
+        contact = self.__contacts.find(name)
+        if not contact:
+            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
+
+        contact.remove_address_label(address)
 
     def get_contact(self, name: str) -> ContactRecord | None:
         return self.__contacts.find(name)
@@ -171,8 +180,8 @@ class ContactsService:
         *,
         phone: tuple[str, str] | None = None,
         birthday: str | None = None,
-        email: str | None = None,
-        address: str | None = None,
+        email: tuple[str, str] | None = None,
+        address: tuple[str, str] | None = None,
     ) -> None:
         contact = self.__contacts.find(name)
         if not contact:
@@ -183,9 +192,9 @@ class ContactsService:
         if birthday:
             contact.add_birthday(birthday)
         if email:
-            contact.add_email(email)
+            contact.edit_email(email[0], email[1])
         if address:
-            contact.add_address(address)
+            contact.edit_address(address[0], address[1])
 
     def delete_contact(self, name: str) -> None:
         contact = self.__contacts.find(name)
