@@ -25,16 +25,16 @@ First, [install `uv`](https://docs.astral.sh/uv/getting-started/installation/) i
    uv pip install -e .
    ```
 
-   *Alternatively, to install it globally on your system:*
+   *Alternatively, to install it globally on your system, but not in editable mode (less convenient for local development):*
    ```bash
-   uv tool install -e .
+   uv tool install .
    ```
 
 4. **Run the bot:**
    ```bash
    cna
    ```
-   *If you are running it without installing globally, use `uv run cna` to ensure it executes within the virtual environment.*
+   *If you are running it without global installation and want to ensure it executes within the virtual environment, use `uv run cna`.*
 
 ## Working with Git
 
