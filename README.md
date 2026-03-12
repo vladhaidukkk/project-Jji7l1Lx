@@ -1,4 +1,4 @@
-# Assistant Bot Project
+# Contacts Notes Assistant (CNA)
 
 A CLI-based assistant bot for managing contacts and notes.
 
@@ -18,11 +18,23 @@ First, [install `uv`](https://docs.astral.sh/uv/getting-started/installation/) i
    ```
    *This automatically sets up the correct Python version, creates a virtual environment, and installs all packages.*
 
-3. **Run the bot:**
+3. **Install the CLI:**
+
+   To install the `cna` command locally in editable mode (recommended for development):
    ```bash
-   uv run python -m bot
+   uv pip install -e .
    ```
-   *This automatically ensures the command is executed within the virtual environment.*
+
+   *Alternatively, to install it globally on your system, but not in editable mode (less convenient for local development):*
+   ```bash
+   uv tool install .
+   ```
+
+4. **Run the bot:**
+   ```bash
+   cna
+   ```
+   *If you are running it without global installation and want to ensure it executes within the virtual environment, use `uv run cna`.*
 
 ## Working with Git
 
