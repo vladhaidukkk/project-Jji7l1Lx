@@ -2,7 +2,7 @@ from rich.text import Text
 
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.console import console
-from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
+from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError, ContactRecord
 from bot.notes import NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
 
@@ -823,3 +823,50 @@ class StopCommandsLoop(Exception):
 def say_goodbye() -> None:
     print("Good bye!")
     raise StopCommandsLoop
+
+@bot_commands.register("search-contact-by-name", args=["query"])
+def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    search_by_field(args, context, "name")
+
+@bot_commands.register("search-contact-by-phone", args=["query"])
+def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    search_by_field(args, context, "phone")
+
+@bot_commands.register("search-contact-by-email", args=["query"])
+def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    search_by_field(args, context, "email")
+
+@bot_commands.register("search-contact-by-address", args=["query"])
+def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    search_by_field(args, context, "address")
+
+def search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
+    query = args[0]
+    contacts_service = context["contacts_service"]
+    contacts = context["contacts"]
+
+    if not contacts:
+        print("No contacts available to search.")
+        return
+
+    matches = contacts_service.search_contacts_by_field(
+        query=query,
+        field=field,
+        score_cutoff=60.0,
+        limit=10,
+    )
+
+    if not matches:
+        print(f"No match found for '{query}'.")
+        return
+
+    print("Suggested notes:")
+    for contact, field_res in matches:
+        title_text = Text("- ")
+        if field_res and field_res.score:
+            title_text.append(str(contact))
+        else:
+            title_text.append(field_res)
+
+        console.print(title_text)
+
