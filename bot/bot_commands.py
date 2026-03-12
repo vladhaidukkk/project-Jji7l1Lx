@@ -15,6 +15,11 @@ def say_hello() -> None:
     print("How can I help you?")
 
 
+# ================================================
+# Commands for contacts management
+# ================================================
+
+
 @bot_commands.register("add", args=["name"], optional_args=["phone number"])
 def add_contact(args: CommandArgs, context: CommandContext) -> None:
     name, phone = args
@@ -47,6 +52,25 @@ def change_name(args: CommandArgs, context: CommandContext) -> None:
         print("Contact with new name already exists.")
 
 
+@bot_commands.register("add-phone", args=["name", "phone number"])
+def add_phone(args: CommandArgs, context: CommandContext) -> None:
+    name, phone = args
+    contacts_service = context["contacts_service"]
+
+    contact = contacts_service.get_contact(name)
+    if contact and contact.phones:
+        # Temporary command-layer restriction: keep a single phone per contact
+        # until multi-phone support.
+        print("Contact already has a phone number.")
+        return
+
+    try:
+        contacts_service.add_phone(name, phone=phone)
+        print("Phone number added.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
 @bot_commands.register(
     "change-phone",
     args=["name", "old phone number", "new phone number"],
@@ -62,7 +86,7 @@ def change_phone(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
-@bot_commands.register("phone", args=["name"])
+@bot_commands.register("show-phone", args=["name"])
 def show_phone(args: CommandArgs, context: CommandContext) -> None:
     name = args[0]
     contacts_service = context["contacts_service"]
@@ -77,6 +101,18 @@ def show_phone(args: CommandArgs, context: CommandContext) -> None:
         return
 
     print(contact.phones[0])
+
+
+@bot_commands.register("delete-phone", args=["name", "phone number"])
+def delete_phone(args: CommandArgs, context: CommandContext) -> None:
+    name, phone = args
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_phone(name, phone=phone)
+        print("Phone number deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
 
 
 @bot_commands.register("all")
@@ -120,6 +156,18 @@ def show_birthday(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
+@bot_commands.register("delete-birthday", args=["name"])
+def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_birthday(name)
+        print("Birthday deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
 @bot_commands.register("add-email", args=["name", "email"])
 def add_email(args: CommandArgs, context: CommandContext) -> None:
     name, email = args
@@ -147,6 +195,18 @@ def show_email(args: CommandArgs, context: CommandContext) -> None:
         print("Contact doesn't exist.")
 
 
+@bot_commands.register("delete-email", args=["name"])
+def delete_email(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_email(name)
+        print("Email deleted.")
+    except ContactNotFoundError:
+        print("Contact doesn't exist.")
+
+
 @bot_commands.register("add-address", args=["name", "address"])
 def add_address(args: CommandArgs, context: CommandContext) -> None:
     name, address = args
@@ -171,6 +231,18 @@ def show_address(args: CommandArgs, context: CommandContext) -> None:
     if contact:
         print(contact.address or "Contact doesn't have an address set.")
     else:
+        print("Contact doesn't exist.")
+
+
+@bot_commands.register("delete-address", args=["name"])
+def delete_address(args: CommandArgs, context: CommandContext) -> None:
+    name = args[0]
+    contacts_service = context["contacts_service"]
+
+    try:
+        contacts_service.delete_address(name)
+        print("Address deleted.")
+    except ContactNotFoundError:
         print("Contact doesn't exist.")
 
 
@@ -209,6 +281,11 @@ def delete_contact(args: CommandArgs, context: CommandContext) -> None:
         print(f"Contact '{name}' deleted.")
     except ContactNotFoundError:
         print("Contact doesn't exist.")
+
+
+# ================================================
+# Commands for notes management
+# ================================================
 
 
 @bot_commands.register("note", args=["name"])
