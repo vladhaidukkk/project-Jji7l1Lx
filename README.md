@@ -36,20 +36,45 @@ First, [install `uv`](https://docs.astral.sh/uv/getting-started/installation/) i
    ```
    *If you are running it without global installation and want to ensure it executes within the virtual environment, use `uv run cna`.*
 
-   You can override the default storage files with named options:
-   ```bash
-   cna --notes-path ~/tmp/notes.pkl
-   cna --contacts-path ~/tmp/contacts.pkl --notes-path ~/tmp/notes.pkl
-   ```
+## Data Storage
 
-   By default, CNA stores its pickle data in the OS application data directory:
-   - Linux: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
-   - macOS: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
-   - Windows: `%LOCALAPPDATA%\cna`
+You can override the default storage files with named options:
+```bash
+cna --notes-path ~/tmp/notes.pkl
+cna --contacts-path ~/tmp/contacts.pkl --notes-path ~/tmp/notes.pkl
+```
 
-   The commands history file is stored separately in the OS state directory where applicable:
-   - Linux: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
-   - macOS: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
+By default, CNA stores its pickle data in the OS application data directory:
+- Linux: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
+- macOS: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
+- Windows: `%LOCALAPPDATA%\cna`
+
+The commands history file is stored separately in the OS state directory where applicable:
+- Linux: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
+- macOS: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
+
+### If contact or note structure changes
+
+CNA stores contacts and notes as Python pickle files. If the `Contact` or `Note` structure changes during development, older saved data may stop loading correctly.
+
+First, run:
+```bash
+cna --help
+```
+
+This shows the exact paths currently used for `--contacts-path` and `--notes-path`, for example:
+```text
+--contacts-path  /Users/you/.local/share/cna/contacts.pkl
+--notes-path     /Users/you/.local/share/cna/notes.pkl
+```
+
+If you need a clean state, remove the outdated pickle files and start the CLI again:
+```bash
+rm /path/to/contacts.pkl
+rm /path/to/notes.pkl
+```
+
+Tip for developers: this is the fastest way to recover from local schema changes while iterating, but it deletes existing saved contacts and notes.
 
 ## Working with Git
 
