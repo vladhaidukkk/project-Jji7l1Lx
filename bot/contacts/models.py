@@ -23,9 +23,10 @@ class Name(Field):
 
     @value.setter
     def value(self, value: str) -> None:
+        value_stripped = value.strip()
         if not value:
             raise ValueError("Note name cannot be empty")
-        self._value = value
+        self._value = value_stripped
 
 
 class Phone(Field):
@@ -42,14 +43,14 @@ class Phone(Field):
     @value.setter
     def value(self, value: str) -> None:
         # Phone number validation
+        value_stripped = value.strip()
         if not value:
             raise ValueError("Phone number cannot be empty")
         if len(value) != 10:
             raise ValueError("Phone number must be exactly 10 digits")
         if not value.isdigit():
             raise ValueError("Phone number must contain only digits")
-        self._value = value
-        self.label = self._normalize_label(label) if label else None
+        self._value = value_stripped
 
     @staticmethod
     def _normalize_label(label: str) -> str:
@@ -68,11 +69,6 @@ class Birthday(Field):
         value_stripped = value.strip()
         super().__init__(value_stripped)
         self.value = value_stripped
-        try:
-            value = datetime.strptime(value.strip(), "%d.%m.%Y")
-            super().__init__(value)
-        except ValueError:
-            raise ValueError("Invalid birthday format. Use DD.MM.YYYY")
 
     def __str__(self) -> str:
         return self.value.strftime("%Y.%m.%d")
@@ -85,7 +81,8 @@ class Birthday(Field):
     def value(self, value: str) -> None:
         # Birthday validation
         try:
-            value_parsed = datetime.strptime(value, "%d.%m.%Y")
+            value_stripped = value.strip()
+            value_parsed = datetime.strptime(value_stripped, "%d.%m.%Y")
             self._value = value_parsed
         except ValueError:
             raise ValueError("Invalid birthday format. Use DD.MM.YYYY")
@@ -94,13 +91,9 @@ class Birthday(Field):
 class Email(Field):
     def __init__(self, value: str, label: str | None = None) -> None:
         # Email validation
-        value = value.strip()
-        if not value:
-            raise ValueError("Email cannot be empty")
-        if not EMAIL_PATTERN.fullmatch(value):
-            raise ValueError("Invalid email format")
-
-        super().__init__(value)
+        value_stripped = value.strip()
+        super().__init__(value_stripped)
+        self.value = value_stripped
         self.label = self._normalize_label(label) if label else None
 
     @staticmethod
@@ -114,6 +107,19 @@ class Email(Field):
     def __str__(self) -> str:
         return f"{self.value} ({self.label})" if self.label else self.value
 
+    @property
+    def value(self) -> str:
+        return self._value
+
+    @value.setter
+    def value(self, value: str) -> None:
+        # Address validation
+        value = value.strip()
+        if not value:
+            raise ValueError("Email cannot be empty")
+        if not EMAIL_PATTERN.fullmatch(value):
+            raise ValueError("Invalid email format")
+        self._value = value
 
 class Address(Field):
     def __init__(self, value: str, label: str | None = None) -> None:
