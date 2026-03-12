@@ -184,7 +184,7 @@ def show_note(args: CommandArgs, context: CommandContext) -> None:
         print("Note doesn't exist.")
         return
 
-    print(note.content)
+    console.print(note.content)
 
 
 @bot_commands.register("delete-note", args=["name"])
