@@ -233,20 +233,20 @@ def edit_note(args: CommandArgs, context: CommandContext) -> None:
         print("Changes discarded.")
 
 
+def _format_note(note: Note) -> str:
+    tags = " ".join(f"[{tag}]" for tag in note.tags)
+    content_preview = note.preview(30)
+    prefix = f"{note.name} {tags}".strip()
+    return f"{prefix}: {content_preview}" if content_preview else prefix
+
+
 @bot_commands.register("notes")
 def show_notes(context: CommandContext) -> None:
     notes = context["notes"]
     if not notes:
         print("No notes.")
         return
-
-    def format_note(note: Note) -> str:
-        tags = " ".join(f"[{tag}]" for tag in note.tags)
-        content_preview = note.preview(30)
-        prefix = f"{note.name} {tags}".strip()
-        return f"{prefix}: {content_preview}" if content_preview else prefix
-
-    print("\n".join(format_note(note) for note in notes.values()))
+    print("\n".join(_format_note(note) for note in notes.values()))
 
 
 @bot_commands.register("show-note", args=["name"])
@@ -374,6 +374,41 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
                 content_snippet.append("...")
 
             console.print(content_snippet)
+
+
+@bot_commands.register("search-notes-by-tag", args=["tag"])
+def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
+    tag = args[0]
+    notes = context["notes"]
+    notes_service = context["notes_service"]
+
+    if not notes:
+        print("No notes available to search.")
+        return
+
+    found_notes = notes_service.search_notes_by_tag(tag)
+    if not found_notes:
+        print(f"No notes found with tag '{tag}'.")
+        return
+
+    print("\n".join(_format_note(note) for note in found_notes))
+
+
+@bot_commands.register("note-tags")
+def list_note_tags(context: CommandContext) -> None:
+    notes = context["notes"]
+    notes_service = context["notes_service"]
+
+    if not notes:
+        print("No notes.")
+        return
+
+    tag_counts = notes_service.list_note_tags()
+    if not tag_counts:
+        print("No note tags.")
+        return
+
+    print("\n".join(f"{tag}: {count}" for tag, count in tag_counts))
 
 
 class StopCommandsLoop(Exception):

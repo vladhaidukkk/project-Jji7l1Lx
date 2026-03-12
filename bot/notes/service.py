@@ -1,9 +1,10 @@
+from collections import Counter
 from typing import Any, Literal
 
 from rapidfuzz import fuzz
 
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
-from .models import Note, NoteContent, NoteName, NotesBook
+from .models import Note, NoteContent, NoteName, NotesBook, NoteTag
 
 SearchResultItem = tuple[Note, float, Any, Any]
 
@@ -114,3 +115,17 @@ class NotesService:
         # Sort matches by highest score
         matches.sort(key=lambda x: x[1], reverse=True)
         return matches[:limit]
+
+    def search_notes_by_tag(self, tag: str) -> list[Note]:
+        note_tag = NoteTag(tag)
+        return [
+            note
+            for note in self.__notes.data.values()
+            if any(t.value == note_tag.value for t in note.tags)
+        ]
+
+    def list_note_tags(self) -> list[tuple[str, int]]:
+        tag_counts = Counter(
+            tag.value for note in self.__notes.data.values() for tag in note.tags
+        )
+        return sorted(tag_counts.items())
