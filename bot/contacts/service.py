@@ -113,7 +113,8 @@ class ContactsService:
         if self.__contacts.find(new_name):
             raise ContactAlreadyExistsError(f"Contact '{new_name}' already exists.")
 
+        new_name = Name(new_name)
         self.__contacts.delete(old_name)
-        contact.name = Name(new_name)
+        contact.name = new_name
         self.__contacts.add_record(contact)
         return "renamed"
