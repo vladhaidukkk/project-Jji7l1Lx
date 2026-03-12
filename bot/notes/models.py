@@ -71,13 +71,7 @@ class Note:
 
     @staticmethod
     def __dedup_tags(tags: list[str]) -> list[str]:
-        seen: set[str] = set()
-        unique_tags: list[str] = []
-        for tag in tags:
-            if tag not in seen:
-                seen.add(tag)
-                unique_tags.append(tag)
-        return unique_tags
+        return list(dict.fromkeys(tags))
 
 
 class NotesBook(UserDict):

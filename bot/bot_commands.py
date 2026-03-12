@@ -263,7 +263,7 @@ def show_note(args: CommandArgs, context: CommandContext) -> None:
 
 
 @bot_commands.register("add-note-tag", args=["name", "tag"])
-def add_note_tags(args: CommandArgs, context: CommandContext) -> None:
+def add_note_tag(args: CommandArgs, context: CommandContext) -> None:
     name, tag = args
     notes_service = context["notes_service"]
 
@@ -278,7 +278,7 @@ def add_note_tags(args: CommandArgs, context: CommandContext) -> None:
 
 
 @bot_commands.register("delete-note-tag", args=["name", "tag"])
-def delete_note_tags(args: CommandArgs, context: CommandContext) -> None:
+def delete_note_tag(args: CommandArgs, context: CommandContext) -> None:
     name, tag = args
     notes_service = context["notes_service"]
 
