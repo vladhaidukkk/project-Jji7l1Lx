@@ -32,6 +32,45 @@ class ContactsService:
             contact.add_address(address)
         self.__contacts.add_record(contact)
 
+    def add_contact(
+        self,
+        name: str,
+        *,
+        phone: str | None = None,
+        birthday: str | None = None,
+        email: str | None = None,
+        address: str | None = None,
+    ) -> str:
+        contact = self.__contacts.find(name)
+        if not contact:
+            self.create_contact(
+                name,
+                phone=phone,
+                birthday=birthday,
+                email=email,
+                address=address,
+            )
+            return "added"
+
+        updated = []
+        if not contact.phones and phone:
+            self.add_phone(name, phone=phone)
+            updated.append("phone")
+        if not contact.birthday and birthday:
+            self.add_birthday(name, birthday=birthday)
+            updated.append("birthday")
+        if not contact.email and email:
+            self.add_email(name, email=email)
+            updated.append("email")
+        if not contact.address and address:
+            self.add_address(name, address=address)
+            updated.append("address")
+
+        if updated:
+            return f"updated:{'|'.join(updated)}"
+
+        raise ContactAlreadyExistsError(f"Contact '{name}' aready exists")
+
     def add_phone(self, name: str, *, phone: str) -> None:
         contact = self.__contacts.find(name)
         if not contact:
@@ -45,20 +84,6 @@ class ContactsService:
             raise ContactNotFoundError(f"Contact '{name}' does not exist.")
 
         contact.remove_phone(phone)
-
-    def add_phone_label(self, name: str, *, phone: str, label: str) -> None:
-        contact = self.__contacts.find(name)
-        if not contact:
-            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
-
-        contact.add_phone_label(phone, label)
-
-    def delete_phone_label(self, name: str, *, phone: str) -> None:
-        contact = self.__contacts.find(name)
-        if not contact:
-            raise ContactNotFoundError(f"Contact '{name}' does not exist.")
-
-        contact.remove_phone_label(phone)
 
     def add_birthday(
         self,
