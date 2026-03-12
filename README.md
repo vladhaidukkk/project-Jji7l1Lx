@@ -36,6 +36,21 @@ First, [install `uv`](https://docs.astral.sh/uv/getting-started/installation/) i
    ```
    *If you are running it without global installation and want to ensure it executes within the virtual environment, use `uv run cna`.*
 
+   You can override the default storage files with named options:
+   ```bash
+   cna --notes-path ~/tmp/notes.pkl
+   cna --contacts-path ~/tmp/contacts.pkl --notes-path ~/tmp/notes.pkl
+   ```
+
+   By default, CNA stores its pickle data in the OS application data directory:
+   - Linux: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
+   - macOS: `$XDG_DATA_HOME/cna` or `~/.local/share/cna`
+   - Windows: `%LOCALAPPDATA%\cna`
+
+   The commands history file is stored separately in the OS state directory where applicable:
+   - Linux: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
+   - macOS: `$XDG_STATE_HOME/cna/history` or `~/.local/state/cna/history`
+
 ## Working with Git
 
 To maintain a clean and efficient workflow, follow these steps when starting a new task:

@@ -5,6 +5,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Self
 
+from bot.utils.file_utils import ensure_file_dir_exists
+
 EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
 
@@ -195,5 +197,7 @@ class ContactsBook(UserDict):
             return cls()
 
     def save(self, path: str | Path) -> None:
-        with open(path, "wb") as f:
+        path = Path(path)
+        ensure_file_dir_exists(path)
+        with path.open("wb") as f:
             pickle.dump(self, f)
