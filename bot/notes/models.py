@@ -3,6 +3,8 @@ from collections import UserDict
 from pathlib import Path
 from typing import Self
 
+from bot.utils.file_utils import ensure_file_dir_exists
+
 
 class Note:
     def __init__(self, name: str, content: str = "") -> None:
@@ -40,5 +42,7 @@ class NotesBook(UserDict):
             return cls()
 
     def save(self, path: str | Path) -> None:
-        with open(path, "wb") as f:
+        path = Path(path)
+        ensure_file_dir_exists(path)
+        with path.open("wb") as f:
             pickle.dump(self, f)
