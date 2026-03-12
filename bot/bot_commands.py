@@ -218,7 +218,7 @@ def edit_note(args: CommandArgs, context: CommandContext) -> None:
 
     # Pre-fill if note already exists
     existing_note = notes_service.get_note(name)
-    initial_text = existing_note.content if existing_note else ""
+    initial_text = existing_note.content.value if existing_note else ""
 
     print(f"Opening editor for note '{name}'...")
     final_content = open_editor(title=name, initial_text=initial_text)
@@ -241,8 +241,10 @@ def show_notes(context: CommandContext) -> None:
         return
 
     def format_note(note: Note) -> str:
+        tags = " ".join(f"[{tag}]" for tag in note.tags)
         content_preview = note.preview(30)
-        return f"{note.name}: {content_preview}" if content_preview else note.name
+        prefix = f"{note.name} {tags}".strip()
+        return f"{prefix}: {content_preview}" if content_preview else prefix
 
     print("\n".join(format_note(note) for note in notes.values()))
 
@@ -258,6 +260,36 @@ def show_note(args: CommandArgs, context: CommandContext) -> None:
         return
 
     console.print(note.content)
+
+
+@bot_commands.register("add-note-tag", args=["name", "tag"])
+def add_note_tags(args: CommandArgs, context: CommandContext) -> None:
+    name, tag = args
+    notes_service = context["notes_service"]
+
+    try:
+        added_tags = notes_service.add_note_tags(name, [tag])
+        if added_tags:
+            print(f"Added '{tag}' tag to '{name}'.")
+        else:
+            print(f"Tag '{tag}' is already set on '{name}'.")
+    except NoteNotFoundError:
+        print("Note doesn't exist.")
+
+
+@bot_commands.register("delete-note-tag", args=["name", "tag"])
+def delete_note_tags(args: CommandArgs, context: CommandContext) -> None:
+    name, tag = args
+    notes_service = context["notes_service"]
+
+    try:
+        removed_tags = notes_service.remove_note_tags(name, [tag])
+        if removed_tags:
+            print(f"Deleted '{tag}' tag from '{name}'.")
+        else:
+            print(f"Tag '{tag}' is not set on '{name}'.")
+    except NoteNotFoundError:
+        print("Note doesn't exist.")
 
 
 @bot_commands.register("delete-note", args=["name"])
@@ -307,36 +339,38 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
 
     print("Suggested notes:")
     for note, score, name_res, content_res in matches:
+        note_name = note.name.value
         title_text = Text("- ")
         if name_res and name_res.score == score:
             # Highlight title
-            title_text.append(note.name[: name_res.dest_start])
+            title_text.append(note_name[: name_res.dest_start])
             title_text.append(
-                note.name[name_res.dest_start : name_res.dest_end], style="bold green"
+                note_name[name_res.dest_start : name_res.dest_end], style="bold green"
             )
-            title_text.append(note.name[name_res.dest_end :])
+            title_text.append(note_name[name_res.dest_end :])
         else:
-            title_text.append(note.name)
+            title_text.append(note_name)
 
         console.print(title_text)
 
         if content_res and content_res.score == score:
             # Highlight content snippet
+            note_content = note.content.value
             start = max(0, content_res.dest_start - 20)
-            end = min(len(note.content), content_res.dest_end + 20)
+            end = min(len(note_content), content_res.dest_end + 20)
 
             content_snippet = Text("  Content match: ")
             if start > 0:
                 content_snippet.append("...")
 
-            content_snippet.append(note.content[start : content_res.dest_start])
+            content_snippet.append(note_content[start : content_res.dest_start])
             content_snippet.append(
-                note.content[content_res.dest_start : content_res.dest_end],
+                note_content[content_res.dest_start : content_res.dest_end],
                 style="bold green",
             )
-            content_snippet.append(note.content[content_res.dest_end : end])
+            content_snippet.append(note_content[content_res.dest_end : end])
 
-            if end < len(note.content):
+            if end < len(note_content):
                 content_snippet.append("...")
 
             console.print(content_snippet)
