@@ -66,13 +66,13 @@ def main() -> None:
     print("Welcome to the assistant bot!")
     try:
         while True:
-            command, command_args = commands_dispatcher.input_command(
-                "Enter a command: "
-            )
-            if not command:
-                continue
-
             try:
+                command, command_args = commands_dispatcher.input_command(
+                    "Enter a command: "
+                )
+                if not command:
+                    continue
+
                 commands_dispatcher.run_command(
                     command,
                     *command_args,

@@ -26,8 +26,9 @@ class CommandsDispatcher:
         try:
             parts = shlex.split(user_input)
         except ValueError:
-            # Fallback for unbalanced quotes (e.g. `add-address john "Chicago`)
-            parts = user_input.split()
+            raise ValueError(
+                "Unbalanced quotes in input. Please close any open quotes and try again"
+            )
 
         command, *args = parts
         command = command.lower()

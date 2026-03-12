@@ -48,7 +48,12 @@ class Birthday(Field):
 
 
 class Address(Field):
-    pass
+    def __init__(self, value: str) -> None:
+        # Address validation
+        if not value:
+            raise ValueError("Address cannot be empty")
+
+        super().__init__(value)
 
 
 class ContactRecord:
@@ -155,7 +160,7 @@ class ContactsBook(UserDict):
             upcoming_birthdays.append(
                 {
                     "name": record.name,
-                    "birthday": record.get_birthday(),
+                    "birthday": str(record.birthday),
                     "congratulation_date": congratulation_date.strftime("%Y.%m.%d"),
                 }
             )
