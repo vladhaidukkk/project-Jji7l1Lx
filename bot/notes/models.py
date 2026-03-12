@@ -9,21 +9,23 @@ from bot.utils.file_utils import ensure_file_dir_exists
 
 class NoteName(Field):
     def __init__(self, value: str) -> None:
-        super().__init__(value)
-        self.value = value
+        value_stripped = value.strip()
+        super().__init__(value_stripped)
+        self.value = value_stripped
+
+    @property
+    def value(self) -> str:
+        return self._value
+
+    @value.setter
+    def value(self, value: str) -> None:
+        value_stripped = value.strip()
+        if not value_stripped:
+            raise ValueError("Note name cannot be empty")
+        self._value = value_stripped
 
 
 class NoteContent(Field):
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        if not value:
-            raise ValueError("Note name cannot be empty")
-        self._name = value
-
     @property
     def content(self) -> str:
         return self._content

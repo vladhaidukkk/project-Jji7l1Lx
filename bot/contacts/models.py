@@ -24,8 +24,8 @@ class Name(Field):
     @value.setter
     def value(self, value: str) -> None:
         value_stripped = value.strip()
-        if not value:
-            raise ValueError("Note name cannot be empty")
+        if not value_stripped:
+            raise ValueError("Name cannot be empty")
         self._value = value_stripped
 
 
@@ -44,11 +44,11 @@ class Phone(Field):
     def value(self, value: str) -> None:
         # Phone number validation
         value_stripped = value.strip()
-        if not value:
+        if not value_stripped:
             raise ValueError("Phone number cannot be empty")
-        if len(value) != 10:
+        if len(value_stripped) != 10:
             raise ValueError("Phone number must be exactly 10 digits")
-        if not value.isdigit():
+        if not value_stripped.isdigit():
             raise ValueError("Phone number must contain only digits")
         self._value = value_stripped
 
@@ -90,7 +90,6 @@ class Birthday(Field):
 
 class Email(Field):
     def __init__(self, value: str, label: str | None = None) -> None:
-        # Email validation
         value_stripped = value.strip()
         super().__init__(value_stripped)
         self.value = value_stripped
@@ -113,13 +112,13 @@ class Email(Field):
 
     @value.setter
     def value(self, value: str) -> None:
-        # Address validation
-        value = value.strip()
-        if not value:
+        # Email validation
+        value_stripped = value.strip()
+        if not value_stripped:
             raise ValueError("Email cannot be empty")
-        if not EMAIL_PATTERN.fullmatch(value):
+        if not EMAIL_PATTERN.fullmatch(value_stripped):
             raise ValueError("Invalid email format")
-        self._value = value
+        self._value = value_stripped
 
 class Address(Field):
     def __init__(self, value: str, label: str | None = None) -> None:
@@ -135,10 +134,10 @@ class Address(Field):
     @value.setter
     def value(self, value: str) -> None:
         # Address validation
-        value = value.strip()
-        if not value:
+        value_stripped = value.strip()
+        if not value_stripped:
             raise ValueError("Address cannot be empty")
-        self._value = value
+        self._value = value_stripped
 
     @staticmethod
     def _normalize_label(label: str) -> str:
