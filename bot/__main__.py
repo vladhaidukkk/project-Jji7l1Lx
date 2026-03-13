@@ -15,6 +15,7 @@ from bot.config import (
     DEFAULT_HISTORY_FILE,
     DEFAULT_NOTES_FILE,
 )
+from bot.console import console
 from bot.contacts import ContactsBook, ContactsService
 from bot.notes import NotesBook, NotesService
 
@@ -107,6 +108,7 @@ app = typer.Typer(
 
 @app.callback()
 def cli(
+    ctx: typer.Context,
     contacts_path: Path = typer.Option(
         DEFAULT_CONTACTS_FILE,
         "--contacts-path",
@@ -118,11 +120,23 @@ def cli(
         help="Path to the notes pickle file.",
     ),
 ) -> None:
+    if ctx.invoked_subcommand is not None:
+        return
+
     run_bot(
         contacts_path=contacts_path,
         notes_path=notes_path,
         history_path=DEFAULT_HISTORY_FILE,
     )
+
+
+@app.command(
+    "commands",
+    help="Show detailed descriptions of available assistant commands.",
+)
+def show_commands() -> None:
+    for command in bot_commands.get_primary_commands():
+        console.print(command)
 
 
 def main() -> None:

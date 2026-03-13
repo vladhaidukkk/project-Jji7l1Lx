@@ -6,4 +6,4 @@ from .errors import (
     ForbiddenCommandArgumentError,
     InvalidCommandArgumentsError,
 )
-from .registry import CommandsRegistry
+from .registry import Command, CommandsRegistry
