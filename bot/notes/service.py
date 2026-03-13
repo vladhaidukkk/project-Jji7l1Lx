@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Literal, Optional
+from typing import Literal, NamedTuple, Optional
 
 from bot.utils.search_utils import fuzzy_search, sort_and_limit_matches
 from rapidfuzz.distance import ScoreAlignment
@@ -7,7 +7,12 @@ from rapidfuzz.distance import ScoreAlignment
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
 from .models import Note, NoteContent, NoteName, NotesBook, NoteTag
 
-SearchResultItemForNotes = tuple[Note, float, Optional[ScoreAlignment], Optional[ScoreAlignment]]
+
+class SearchResultItemForNotes(NamedTuple):
+    note: Note
+    best_score: float
+    name_alignment: Optional[ScoreAlignment]
+    content_alignment: Optional[ScoreAlignment]
 
 class NotesService:
     def __init__(self, notes: NotesBook) -> None:
@@ -107,10 +112,10 @@ class NotesService:
             # Keep the best match for this note
             best_score = max(name_score, content_score)
             if best_score >= score_cutoff:
-                matches.append((note, best_score, name_res, content_res))
+                matches.append(SearchResultItemForNotes(note, best_score, name_res, content_res))
 
         # Sort and limit matches by highest score
-        return sort_and_limit_matches(matches, limit)
+        return sort_and_limit_matches(matches, limit, sort_key=lambda item: item.best_score)
 
     def search_notes_by_tag(self, tag: str) -> list[Note]:
         note_tag = NoteTag(tag)

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal, NamedTuple, Optional
 
 from bot.utils.search_utils import fuzzy_search, sort_and_limit_matches
 from rapidfuzz.distance import ScoreAlignment
@@ -6,7 +6,10 @@ from rapidfuzz.distance import ScoreAlignment
 from .errors import ContactAlreadyExistsError, ContactNotFoundError
 from .models import ContactRecord, ContactsBook, Name
 
-SearchResultItemForContacts = tuple[ContactRecord, Optional[ScoreAlignment]]
+
+class SearchResultItemForContacts(NamedTuple):
+    contact: ContactRecord
+    score_alignment: Optional[ScoreAlignment]
 
 class ContactsService:
     def __init__(self, contacts: ContactsBook) -> None:
@@ -259,6 +262,6 @@ class ContactsService:
             name_score, field_res = fuzzy_search(query, lowercased_field)
 
             if name_score >= score_cutoff:
-                matches.append((contact, field_res))
+                matches.append(SearchResultItemForContacts(contact, field_res))
 
-            return sort_and_limit_matches(matches, limit)
+        return sort_and_limit_matches(matches, limit, sort_key=lambda item: item.score_alignment.score)

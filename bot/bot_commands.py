@@ -860,13 +860,12 @@ def search_by_field(args: CommandArgs, context: CommandContext, field: str) -> N
         print(f"No match found for '{query}'.")
         return
 
-    print("Suggested notes:")
+    print("Suggested contacts:")
     for contact, field_res in matches:
         title_text = Text("- ")
         if field_res and field_res.score:
             title_text.append(str(contact))
         else:
-            title_text.append(field_res)
-
+            continue
         console.print(title_text)
 
