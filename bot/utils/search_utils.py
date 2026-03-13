@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from rapidfuzz import fuzz
 from rapidfuzz.distance import ScoreAlignment

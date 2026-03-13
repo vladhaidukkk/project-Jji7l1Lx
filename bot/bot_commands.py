@@ -1,10 +1,9 @@
-from rich.text import Text
-
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.console import console
-from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError, ContactRecord
+from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
 from bot.notes import NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
+from rich.text import Text
 
 bot_commands = CommandsRegistry()
 
@@ -824,23 +823,39 @@ def say_goodbye() -> None:
     print("Good bye!")
     raise StopCommandsLoop
 
-@bot_commands.register("search-contact-by-name", args=["query"])
+@bot_commands.register(
+    "search-contact-by-name",
+    args=["query"],
+    description="Search for contacts by name using fuzzy matching.",
+)
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
     search_by_field(args, context, "name")
 
-@bot_commands.register("search-contact-by-phone", args=["query"])
+@bot_commands.register(
+    "search-contact-by-phone",
+    args=["query"],
+    description="Search for contacts by phone using fuzzy matching.",
+)
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
     search_by_field(args, context, "phone")
 
-@bot_commands.register("search-contact-by-email", args=["query"])
+@bot_commands.register(
+    "search-contact-by-email",
+    args=["query"],
+    description="Search for contacts by name using fuzzy matching.",
+)
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
     search_by_field(args, context, "email")
 
-@bot_commands.register("search-contact-by-address", args=["query"])
+@bot_commands.register(
+    "search-contact-by-address",
+    args=["query"],
+    description="Search for contacts by name using fuzzy matching.",
+)
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
-    search_by_field(args, context, "address")
+    _search_by_field(args, context, "address")
 
-def search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
+def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
     query = args[0]
     contacts_service = context["contacts_service"]
     contacts = context["contacts"]
