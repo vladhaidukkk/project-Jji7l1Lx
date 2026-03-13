@@ -546,10 +546,10 @@ def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
     optional_args=["days"],
     description="Show upcoming birthdays and their congratulation dates.",
 )
-def list_upcoming_birthdays(context: CommandContext) -> None:
+def list_upcoming_birthdays(args: CommandArgs, context: CommandContext) -> None:
     contacts = context["contacts"]
 
-    days = int(args[0]) if args else 7
+    days = int(args[0]) if args[0] else 7
 
     if not contacts:
         print("No contacts.")
