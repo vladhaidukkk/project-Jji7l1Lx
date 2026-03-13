@@ -1,6 +1,6 @@
-from typing import Any, Literal, Optional
+from typing import Literal, Optional
 
-from rapidfuzz import fuzz
+from bot.utils.search_utils import fuzzy_search, sort_and_limit_matches
 from rapidfuzz.distance import ScoreAlignment
 
 from .errors import ContactAlreadyExistsError, ContactNotFoundError
@@ -240,27 +240,25 @@ class ContactsService:
 
         matches: list[SearchResultItemForContacts] = []
 
-        for name, contact in self.__contacts.data.items():
+        for contact in self.__contacts.data.values():
             # Match against name (case-insensitive)
             lowercased_field = field.lower()
 
-            if lowercased_field.lower() == "name":
-                value = contact.name
-            elif lowercased_field.lower() == "address":
-                value = contact.address
-            elif lowercased_field.lower() == "email":
-                value = contact.email
-            elif lowercased_field.lower() == "phone":
-                value = contact.phone
-            else:
-                value = None
+            match lowercased_field:
+                case "name":
+                    lowercased_field = contact.name
+                case "address":
+                    lowercased_field = contact.address
+                case "email":
+                    lowercased_field = contact.email
+                case "phone":
+                    lowercased_field = contact.phone
+                case _:
+                    lowercased_field = None
 
-            field_res = fuzz.partial_ratio_alignment(query, value.value)
-            name_score = field_res.score if field_res else 0.0
+            name_score, field_res = fuzzy_search(query, lowercased_field)
 
             if name_score >= score_cutoff:
                 matches.append((contact, field_res))
 
-        # Sort matches by highest score
-        matches.sort(key=lambda x: x[1], reverse=True)
-        return matches[:limit]
+            return sort_and_limit_matches(matches, limit)

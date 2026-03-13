@@ -1,13 +1,13 @@
 from collections import Counter
-from typing import Any, Literal
+from typing import Literal, Optional
 
-from rapidfuzz import fuzz
+from bot.utils.search_utils import fuzzy_search, sort_and_limit_matches
+from rapidfuzz.distance import ScoreAlignment
 
 from .errors import NoteAlreadyExistsError, NoteNotFoundError
 from .models import Note, NoteContent, NoteName, NotesBook, NoteTag
 
-SearchResultItem = tuple[Note, float, Any, Any]
-
+SearchResultItemForNotes = tuple[Note, float, Optional[ScoreAlignment], Optional[ScoreAlignment]]
 
 class NotesService:
     def __init__(self, notes: NotesBook) -> None:
@@ -92,29 +92,25 @@ class NotesService:
         *,
         score_cutoff: float = 50.0,
         limit: int = 5,
-    ) -> list[SearchResultItem]:
+    ) -> list[SearchResultItemForNotes]:
         query = query.lower()
 
-        matches: list[SearchResultItem] = []
+        matches: list[SearchResultItemForNotes] = []
+
         for note in self.__notes.data.values():
             # Match against name (case-insensitive)
-            name_res = fuzz.partial_ratio_alignment(query, note.name.value.lower())
-            name_score = name_res.score if name_res else 0.0
+            name_score, name_res = fuzzy_search(query, note.name.value.lower())
 
             # Match against content (case-insensitive)
-            content_res = fuzz.partial_ratio_alignment(
-                query, note.content.value.lower()
-            )
-            content_score = content_res.score if content_res else 0.0
+            content_score, content_res = fuzzy_search(query, note.content.value.lower())
 
             # Keep the best match for this note
             best_score = max(name_score, content_score)
             if best_score >= score_cutoff:
                 matches.append((note, best_score, name_res, content_res))
 
-        # Sort matches by highest score
-        matches.sort(key=lambda x: x[1], reverse=True)
-        return matches[:limit]
+        # Sort and limit matches by highest score
+        return sort_and_limit_matches(matches, limit)
 
     def search_notes_by_tag(self, tag: str) -> list[Note]:
         note_tag = NoteTag(tag)
