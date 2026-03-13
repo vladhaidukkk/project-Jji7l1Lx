@@ -21,7 +21,7 @@ def fuzzy_search(query: str, field_value: Field | list[Field] | str) -> tuple[fl
         if type(field_value) is str:
             max_res = fuzz.partial_ratio_alignment(query, field_value)
             max_score = extract_score(max_res)
-        elif type(field) is Field:
+        elif type(field_value) is Field:
             max_res = fuzz.partial_ratio_alignment(query, field_value.value)
             max_score =extract_score(max_res)
         else:
