@@ -255,7 +255,7 @@ class ContactsService:
             else:
                 value = None
 
-            field_res = fuzz.partial_ratio_alignment(query, value)
+            field_res = fuzz.partial_ratio_alignment(query, value.value)
             name_score = field_res.score if field_res else 0.0
 
             if name_score >= score_cutoff:
