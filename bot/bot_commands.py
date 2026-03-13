@@ -543,10 +543,13 @@ def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
 
 @bot_commands.register(
     "upcoming",
+    optional_args=["days"],
     description="Show upcoming birthdays and their congratulation dates.",
 )
-def list_upcoming_birthdays(context: CommandContext) -> None:
+def list_upcoming_birthdays(args: CommandArgs, context: CommandContext) -> None:
     contacts = context["contacts"]
+
+    days = int(args[0]) if args[0] else 7
 
     if not contacts:
         print("No contacts.")
@@ -556,7 +559,8 @@ def list_upcoming_birthdays(context: CommandContext) -> None:
         print("No contacts with birthdays.")
         return
 
-    upcoming_birthdays = contacts.get_upcoming_birthdays()
+    upcoming_birthdays = contacts.get_upcoming_birthdays(days)
+
     if not upcoming_birthdays:
         print("No contacts with upcoming birthdays.")
         return
