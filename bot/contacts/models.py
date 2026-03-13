@@ -373,7 +373,7 @@ class ContactsBook(UserDict):
     def birthdays_count(self) -> int:
         return sum(1 for record in self.data.values() if record.birthday)
 
-    def get_upcoming_birthdays(self) -> list[dict]:
+    def get_upcoming_birthdays(self, days) -> list[dict]:
         current_date = date.today()
         upcoming_birthdays: list[dict] = []
 
@@ -397,7 +397,7 @@ class ContactsBook(UserDict):
                 )
 
             dates_diff = next_birthday - current_date
-            if dates_diff.days > 7:
+            if dates_diff.days > days:
                 continue
 
             congratulation_date = next_birthday
