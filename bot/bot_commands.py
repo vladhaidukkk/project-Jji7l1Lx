@@ -807,52 +807,36 @@ def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
 
     print("\n".join(str(note) for note in found_notes))
 
-
-class StopCommandsLoop(Exception):
-    pass
-
-
-@bot_commands.register(
-    "bye",
-    "exit",
-    "close",
-    "quit",
-    description="Exit the interactive assistant loop.",
-)
-def say_goodbye() -> None:
-    print("Good bye!")
-    raise StopCommandsLoop
-
 @bot_commands.register(
     "search-contact-by-name",
     args=["query"],
     description="Search for contacts by name using fuzzy matching.",
 )
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
-    search_by_field(args, context, "name")
+    _search_by_field(args, context, "name")
 
 @bot_commands.register(
     "search-contact-by-phone",
     args=["query"],
     description="Search for contacts by phone using fuzzy matching.",
 )
-def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
-    search_by_field(args, context, "phone")
+def search_contact_by_phone(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "phone")
 
 @bot_commands.register(
     "search-contact-by-email",
     args=["query"],
-    description="Search for contacts by name using fuzzy matching.",
+    description="Search for contacts by email using fuzzy matching.",
 )
-def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
-    search_by_field(args, context, "email")
+def search_contact_by_email(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "email")
 
 @bot_commands.register(
     "search-contact-by-address",
     args=["query"],
-    description="Search for contacts by name using fuzzy matching.",
+    description="Search for contacts by address using fuzzy matching.",
 )
-def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+def search_contact_by_address(args: CommandArgs, context: CommandContext) -> None:
     _search_by_field(args, context, "address")
 
 def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
@@ -883,4 +867,19 @@ def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> 
         else:
             continue
         console.print(title_text)
+
+class StopCommandsLoop(Exception):
+    pass
+
+
+@bot_commands.register(
+    "bye",
+    "exit",
+    "close",
+    "quit",
+    description="Exit the interactive assistant loop.",
+)
+def say_goodbye() -> None:
+    print("Good bye!")
+    raise StopCommandsLoop
 

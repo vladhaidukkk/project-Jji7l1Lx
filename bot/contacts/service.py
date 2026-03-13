@@ -249,17 +249,17 @@ class ContactsService:
 
             match lowercased_field:
                 case "name":
-                    lowercased_field = contact.name
+                    field_value = contact.name
                 case "address":
-                    lowercased_field = contact.address
+                    field_value = contact.addresses
                 case "email":
-                    lowercased_field = contact.email
+                    field_value = contact.emails
                 case "phone":
-                    lowercased_field = contact.phone
+                    field_value = contact.phones
                 case _:
-                    lowercased_field = None
+                    field_value = None
 
-            name_score, field_res = fuzzy_search(query, lowercased_field)
+            name_score, field_res = fuzzy_search(query, field_value)
 
             if name_score >= score_cutoff:
                 matches.append(SearchResultItemForContacts(contact, field_res))
