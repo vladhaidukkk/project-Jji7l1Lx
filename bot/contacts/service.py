@@ -1,11 +1,15 @@
-from typing import Any, Literal
+from typing import Literal, NamedTuple, Optional
 
-from rapidfuzz import fuzz
+from bot.utils.search_utils import fuzzy_search, sort_and_limit_matches
+from rapidfuzz.distance import ScoreAlignment
 
 from .errors import ContactAlreadyExistsError, ContactNotFoundError
 from .models import ContactRecord, ContactsBook, Name
 
-SearchResultItemForContacts = tuple[Any, float, Any]
+
+class SearchResultItemForContacts(NamedTuple):
+    contact: ContactRecord
+    score_alignment: Optional[ScoreAlignment]
 
 class ContactsService:
     def __init__(self, contacts: ContactsBook) -> None:
@@ -227,7 +231,7 @@ class ContactsService:
         self.__contacts.add_record(contact)
         return "renamed"
 
-    def search_notes(
+    def search_contacts_by_field(
         self,
         query: str,
         field: str,
@@ -239,37 +243,25 @@ class ContactsService:
 
         matches: list[SearchResultItemForContacts] = []
 
-
-        filtered = {}
-        for name, contact in self.__contacts.data:
-            if field == "name":
-                filtered[name] = contact
-            elif field == "phone":
-                filtered[name] = contact
-            elif field == "email":
-                filtered[name] = contact
-            elif field == "address":
-                if any(
-                    query in address.value.lower() for address in contact.addresses
-                ):
-                    filtered[name] = contact
-
-        for note in self.__contacts.data.values():
+        for contact in self.__contacts.data.values():
             # Match against name (case-insensitive)
-            name_res = fuzz.partial_ratio_alignment(query, note.name.value.lower())
-            name_score = name_res.score if name_res else 0.0
+            lowercased_field = field.lower()
 
-            # Match against content (case-insensitive)
-            content_res = fuzz.partial_ratio_alignment(
-                query, note.content.value.lower()
-            )
-            content_score = content_res.score if content_res else 0.0
+            match lowercased_field:
+                case "name":
+                    field_value = contact.name
+                case "address":
+                    field_value = contact.addresses
+                case "email":
+                    field_value = contact.emails
+                case "phone":
+                    field_value = contact.phones
+                case _:
+                    field_value = None
 
-            # Keep the best match for this note
-            best_score = max(name_score, content_score)
-            if best_score >= score_cutoff:
-                matches.append((note, best_score, name_res, content_res))
+            name_score, field_res = fuzzy_search(query, field_value)
 
-        # Sort matches by highest score
-        matches.sort(key=lambda x: x[1], reverse=True)
-        return matches[:limit]
+            if name_score >= score_cutoff:
+                matches.append(SearchResultItemForContacts(contact, field_res))
+
+        return sort_and_limit_matches(matches, limit, sort_key=lambda item: item.score_alignment.score)

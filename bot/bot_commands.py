@@ -1,10 +1,9 @@
-from rich.text import Text
-
 from bot.commands import CommandArgs, CommandContext, CommandsRegistry
 from bot.console import console
 from bot.contacts import ContactAlreadyExistsError, ContactNotFoundError
 from bot.notes import NoteAlreadyExistsError, NoteNotFoundError
 from bot.notes.editor import open_editor
+from rich.text import Text
 
 bot_commands = CommandsRegistry()
 
@@ -812,6 +811,66 @@ def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
 
     print("\n".join(str(note) for note in found_notes))
 
+@bot_commands.register(
+    "search-contact-by-name",
+    args=["query"],
+    description="Search for contacts by name using fuzzy matching.",
+)
+def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "name")
+
+@bot_commands.register(
+    "search-contact-by-phone",
+    args=["query"],
+    description="Search for contacts by phone using fuzzy matching.",
+)
+def search_contact_by_phone(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "phone")
+
+@bot_commands.register(
+    "search-contact-by-email",
+    args=["query"],
+    description="Search for contacts by email using fuzzy matching.",
+)
+def search_contact_by_email(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "email")
+
+@bot_commands.register(
+    "search-contact-by-address",
+    args=["query"],
+    description="Search for contacts by address using fuzzy matching.",
+)
+def search_contact_by_address(args: CommandArgs, context: CommandContext) -> None:
+    _search_by_field(args, context, "address")
+
+def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
+    query = args[0]
+    contacts_service = context["contacts_service"]
+    contacts = context["contacts"]
+
+    if not contacts:
+        print("No contacts available to search.")
+        return
+
+    matches = contacts_service.search_contacts_by_field(
+        query=query,
+        field=field,
+        score_cutoff=60.0,
+        limit=10,
+    )
+
+    if not matches:
+        print(f"No match found for '{query}'.")
+        return
+
+    print("Suggested contacts:")
+    for contact, field_res in matches:
+        title_text = Text("- ")
+        if field_res and field_res.score:
+            title_text.append(str(contact))
+        else:
+            continue
+        console.print(title_text)
 
 class StopCommandsLoop(Exception):
     pass
@@ -827,3 +886,4 @@ class StopCommandsLoop(Exception):
 def say_goodbye() -> None:
     print("Good bye!")
     raise StopCommandsLoop
+
