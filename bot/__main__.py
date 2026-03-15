@@ -21,6 +21,18 @@ from bot.notes import NotesBook, NotesService
 
 
 def load_contacts(path: Path) -> ContactsBook:
+    """Load the contacts book from a pickle file, exiting on directory errors.
+
+    Args:
+        path: Path to the contacts pickle file.
+
+    Returns:
+        The loaded :class:`~bot.contacts.ContactsBook` instance, or a new
+        empty one if the file does not exist.
+
+    Raises:
+        SystemExit: If *path* points to a directory instead of a file.
+    """
     try:
         return ContactsBook.from_file(path)
     except IsADirectoryError:
@@ -29,6 +41,18 @@ def load_contacts(path: Path) -> ContactsBook:
 
 
 def load_notes(path: Path) -> NotesBook:
+    """Load the notes book from a pickle file, exiting on directory errors.
+
+    Args:
+        path: Path to the notes pickle file.
+
+    Returns:
+        The loaded :class:`~bot.notes.NotesBook` instance, or a new empty one
+        if the file does not exist.
+
+    Raises:
+        SystemExit: If *path* points to a directory instead of a file.
+    """
     try:
         return NotesBook.from_file(path)
     except IsADirectoryError:
@@ -37,6 +61,15 @@ def load_notes(path: Path) -> NotesBook:
 
 
 def handle_invalid_command_args_error(error: InvalidCommandArgumentsError) -> None:
+    """Print a human-readable hint for an invalid-arguments error.
+
+    The message varies depending on which combination of required and optional
+    argument names are recorded in *error*.
+
+    Args:
+        error: The :class:`~bot.commands.InvalidCommandArgumentsError` that was
+            raised during command dispatch.
+    """
     if error.required_args and error.optional_args:
         print(
             f"Give me {error.required_args_str} please, and optionally {error.optional_args_str}."
@@ -55,6 +88,19 @@ def run_bot(
     notes_path: Path = DEFAULT_NOTES_FILE,
     history_path: Path = DEFAULT_HISTORY_FILE,
 ) -> None:
+    """Start the interactive assistant command loop.
+
+    Loads contacts and notes from disk, then repeatedly prompts the user for
+    commands until a :class:`~bot.bot_commands.StopCommandsLoop` exception is
+    raised (e.g. by the ``bye`` command). Contacts and notes are persisted back
+    to disk in a ``finally`` block.
+
+    Args:
+        contacts_path: Path to the contacts pickle file.
+        notes_path: Path to the notes pickle file.
+        history_path: Path to the command-history file used for readline-style
+            history in the prompt.
+    """
     commands_dispatcher = CommandsDispatcher(bot_commands, history_path)
 
     contacts = load_contacts(contacts_path)
@@ -120,6 +166,18 @@ def cli(
         help="Path to the notes pickle file.",
     ),
 ) -> None:
+    """Entry point for the Typer CLI application.
+
+    When invoked without a sub-command, starts the interactive bot loop.
+    When a sub-command is present the callback simply returns so that Typer can
+    dispatch to the appropriate sub-command handler.
+
+    Args:
+        ctx: The Typer/Click context; used to detect whether a sub-command was
+            requested.
+        contacts_path: Override the default path to the contacts pickle file.
+        notes_path: Override the default path to the notes pickle file.
+    """
     if ctx.invoked_subcommand is not None:
         return
 
@@ -135,11 +193,13 @@ def cli(
     help="Show detailed descriptions of available assistant commands.",
 )
 def show_commands() -> None:
+    """Print rich-formatted help panels for every primary bot command."""
     for command in bot_commands.get_primary_commands():
         console.print(command)
 
 
 def main() -> None:
+    """Invoke the Typer application; used as the package entry point."""
     app()
 
 

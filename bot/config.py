@@ -9,6 +9,15 @@ HOME_DIR = Path.home()
 
 
 def _path_from_env(env_var: str, default: Path) -> Path:
+    """Resolve a filesystem path from an environment variable with a fallback.
+
+    Args:
+        env_var: Name of the environment variable to read.
+        default: Path to use when the environment variable is not set.
+
+    Returns:
+        The path obtained from the environment variable (expanded) or *default*.
+    """
     return Path(os.environ.get(env_var, default)).expanduser()
 
 

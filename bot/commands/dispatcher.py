@@ -18,6 +18,15 @@ CommandContext = dict[str, Any]
 
 class CommandsDispatcher:
     def __init__(self, registry: CommandsRegistry, history_file: Path) -> None:
+        """Initialise the dispatcher with a command registry and a history file.
+
+        Args:
+            registry: The :class:`CommandsRegistry` that contains all registered
+                commands and their metadata.
+            history_file: Path to the file used to persist command history across
+                sessions. If the file cannot be created, an in-memory fallback is
+                used instead.
+        """
         self.__registry = registry
         self.__history = CommandsDispatcher.__initialize_history(history_file)
         possible_commands = self.__registry.get_all_command_names()
@@ -25,6 +34,20 @@ class CommandsDispatcher:
 
     @staticmethod
     def __initialize_history(history_file: Path) -> FileHistory | InMemoryHistory:
+        """Set up a persistent or in-memory command history.
+
+        Attempts to create (or open) *history_file* for persistent history.
+        Falls back to :class:`~prompt_toolkit.history.InMemoryHistory` if any
+        error occurs.
+
+        Args:
+            history_file: Absolute path where the history file should be stored.
+
+        Returns:
+            A :class:`~prompt_toolkit.history.FileHistory` if the file could be
+            prepared, otherwise an
+            :class:`~prompt_toolkit.history.InMemoryHistory`.
+        """
         try:
             absolute_history_path = history_file.absolute()
             ensure_file_exists(absolute_history_path)
@@ -36,6 +59,22 @@ class CommandsDispatcher:
             return InMemoryHistory()
 
     def input_command(self, prompt_text: str) -> tuple[str | None, list[str]]:
+        """Prompt the user for a command and parse it into name and arguments.
+
+        The input is split using shell-like tokenisation (respecting quoted
+        strings). The command name is normalised to lowercase.
+
+        Args:
+            prompt_text: The prompt string displayed to the user.
+
+        Returns:
+            A tuple of ``(command, args)`` where *command* is the lowercase
+            command name (or ``None`` when the input is empty) and *args* is a
+            list of the remaining tokens.
+
+        Raises:
+            ValueError: If the input contains unbalanced quotes.
+        """
         user_input = prompt(
             prompt_text,
             history=self.__history,
@@ -56,6 +95,26 @@ class CommandsDispatcher:
         return command, args
 
     def run_command(self, command_name: str, *args: str, **kwargs: Any) -> None:
+        """Look up a registered command and execute it with the supplied arguments.
+
+        The method inspects the command's function signature to inject
+        ``CommandArgs`` and ``CommandContext`` parameters automatically.
+
+        Args:
+            command_name: The name (or alias) of the command to run.
+            *args: Positional string arguments forwarded to the command.
+            **kwargs: Context key-value pairs (e.g. ``contacts``,
+                ``contacts_service``) injected into the ``CommandContext``
+                parameter.
+
+        Raises:
+            CommandNotFoundError: If *command_name* is not in the registry.
+            InvalidCommandArgumentsError: If the number of supplied *args* does
+                not satisfy the command's required/optional argument counts.
+            ForbiddenCommandArgumentError: If the command function declares a
+                parameter with a type that is neither ``CommandArgs`` nor
+                ``CommandContext``.
+        """
         command = self.__registry.get(command_name)
         command_args: dict[str, Any] = {}
 

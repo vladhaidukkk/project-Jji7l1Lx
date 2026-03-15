@@ -14,6 +14,7 @@ bot_commands = CommandsRegistry()
     description="Say hi! A quick way to check if I'm awake and ready to help.",
 )
 def say_hello() -> None:
+    """Greet the user."""
     print("How can I help you?")
 
 
@@ -23,6 +24,7 @@ def say_hello() -> None:
     description="Show detailed descriptions of available assistant commands.",
 )
 def show_commands() -> None:
+    """Print rich-formatted help panels for every primary bot command."""
     for command in bot_commands.get_primary_commands():
         console.print(command)
 
@@ -42,6 +44,14 @@ def show_commands() -> None:
     ),
 )
 def add_contact(args: CommandArgs, context: CommandContext) -> None:
+    """Create a new contact with optional initial details.
+
+    Args:
+        args: Positional arguments in the order
+            ``(name, phone, email, address, birthday)``. Optional fields may be
+            ``None``.
+        context: Command context providing ``contacts_service``.
+    """
     name, phone, email, address, birthday = args
     contacts_service = context["contacts_service"]
 
@@ -64,6 +74,12 @@ def add_contact(args: CommandArgs, context: CommandContext) -> None:
     description="Rename an existing contact.",
 )
 def rename_contact(args: CommandArgs, context: CommandContext) -> None:
+    """Rename a contact.
+
+    Args:
+        args: Positional arguments ``(old_name, new_name)``.
+        context: Command context providing ``contacts_service``.
+    """
     old_name, new_name = args
     contacts_service = context["contacts_service"]
 
@@ -84,6 +100,11 @@ def rename_contact(args: CommandArgs, context: CommandContext) -> None:
     description="Show all saved contacts with their stored details.",
 )
 def list_contacts(context: CommandContext) -> None:
+    """Print all contacts to stdout.
+
+    Args:
+        context: Command context providing ``contacts``.
+    """
     contacts = context["contacts"]
     if not contacts:
         print("No contacts.")
@@ -97,6 +118,11 @@ def list_contacts(context: CommandContext) -> None:
     description="Show only contacts marked as favorites.",
 )
 def list_favorite_contacts(context: CommandContext) -> None:
+    """Print all favorite contacts to stdout.
+
+    Args:
+        context: Command context providing ``contacts``.
+    """
     contacts = context["contacts"]
     if not contacts:
         print("No contacts.")
@@ -116,6 +142,12 @@ def list_favorite_contacts(context: CommandContext) -> None:
     description="Mark a contact as favorite.",
 )
 def favorite_contact(args: CommandArgs, context: CommandContext) -> None:
+    """Mark a contact as a favorite.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -132,6 +164,12 @@ def favorite_contact(args: CommandArgs, context: CommandContext) -> None:
     description="Remove a contact from favorites.",
 )
 def unfavorite_contact(args: CommandArgs, context: CommandContext) -> None:
+    """Remove a contact's favorite status.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -148,6 +186,12 @@ def unfavorite_contact(args: CommandArgs, context: CommandContext) -> None:
     description="Delete a contact entirely.",
 )
 def delete_contact(args: CommandArgs, context: CommandContext) -> None:
+    """Delete a contact.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -169,6 +213,12 @@ def delete_contact(args: CommandArgs, context: CommandContext) -> None:
     description="Add another phone number to an existing contact.",
 )
 def add_phone(args: CommandArgs, context: CommandContext) -> None:
+    """Add a phone number to a contact.
+
+    Args:
+        args: Positional arguments ``(name, phone)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, phone = args
     contacts_service = context["contacts_service"]
 
@@ -185,6 +235,12 @@ def add_phone(args: CommandArgs, context: CommandContext) -> None:
     description="List all phone numbers saved for a contact.",
 )
 def list_phones(args: CommandArgs, context: CommandContext) -> None:
+    """Print all phone numbers of a contact.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -206,6 +262,12 @@ def list_phones(args: CommandArgs, context: CommandContext) -> None:
     description="Replace one of the contact's saved phone numbers with a new one.",
 )
 def change_phone(args: CommandArgs, context: CommandContext) -> None:
+    """Replace an existing phone number on a contact.
+
+    Args:
+        args: Positional arguments ``(name, old_phone, new_phone)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, old_phone, new_phone = args
     contacts_service = context["contacts_service"]
 
@@ -222,6 +284,12 @@ def change_phone(args: CommandArgs, context: CommandContext) -> None:
     description="Delete a specific phone number from a contact.",
 )
 def delete_phone(args: CommandArgs, context: CommandContext) -> None:
+    """Remove a phone number from a contact.
+
+    Args:
+        args: Positional arguments ``(name, phone)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, phone = args
     contacts_service = context["contacts_service"]
 
@@ -238,6 +306,12 @@ def delete_phone(args: CommandArgs, context: CommandContext) -> None:
     description="Assign a label to one of the contact's phone numbers.",
 )
 def add_phone_label(args: CommandArgs, context: CommandContext) -> None:
+    """Assign a label to one of a contact's phone numbers.
+
+    Args:
+        args: Positional arguments ``(name, phone, label)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, phone, label = args
     contacts_service = context["contacts_service"]
 
@@ -254,6 +328,12 @@ def add_phone_label(args: CommandArgs, context: CommandContext) -> None:
     description="Remove the label from one of the contact's phone numbers.",
 )
 def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
+    """Remove the label from one of a contact's phone numbers.
+
+    Args:
+        args: Positional arguments ``(name, phone)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, phone = args
     contacts_service = context["contacts_service"]
 
@@ -275,6 +355,12 @@ def delete_phone_label(args: CommandArgs, context: CommandContext) -> None:
     description="Add an email address to a contact.",
 )
 def add_email(args: CommandArgs, context: CommandContext) -> None:
+    """Add an email address to a contact.
+
+    Args:
+        args: Positional arguments ``(name, email)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, email = args
     contacts_service = context["contacts_service"]
 
@@ -291,6 +377,12 @@ def add_email(args: CommandArgs, context: CommandContext) -> None:
     description="List all email addresses saved for a contact.",
 )
 def list_emails(args: CommandArgs, context: CommandContext) -> None:
+    """Print all email addresses of a contact.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -312,6 +404,12 @@ def list_emails(args: CommandArgs, context: CommandContext) -> None:
     description="Replace one saved email address with another.",
 )
 def change_email(args: CommandArgs, context: CommandContext) -> None:
+    """Replace an existing email address on a contact.
+
+    Args:
+        args: Positional arguments ``(name, old_email, new_email)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, old_email, new_email = args
     contacts_service = context["contacts_service"]
 
@@ -332,6 +430,12 @@ def change_email(args: CommandArgs, context: CommandContext) -> None:
     description="Delete an email address from a contact.",
 )
 def delete_email(args: CommandArgs, context: CommandContext) -> None:
+    """Remove an email address from a contact.
+
+    Args:
+        args: Positional arguments ``(name, email)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, email = args
     contacts_service = context["contacts_service"]
 
@@ -348,6 +452,12 @@ def delete_email(args: CommandArgs, context: CommandContext) -> None:
     description="Assign a label to one of the contact's email addresses.",
 )
 def add_email_label(args: CommandArgs, context: CommandContext) -> None:
+    """Assign a label to one of a contact's email addresses.
+
+    Args:
+        args: Positional arguments ``(name, email, label)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, email, label = args
     contacts_service = context["contacts_service"]
 
@@ -364,6 +474,12 @@ def add_email_label(args: CommandArgs, context: CommandContext) -> None:
     description="Remove the label from one of the contact's email addresses.",
 )
 def delete_email_label(args: CommandArgs, context: CommandContext) -> None:
+    """Remove the label from one of a contact's email addresses.
+
+    Args:
+        args: Positional arguments ``(name, email)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, email = args
     contacts_service = context["contacts_service"]
 
@@ -385,6 +501,12 @@ def delete_email_label(args: CommandArgs, context: CommandContext) -> None:
     description="Add a postal address to a contact.",
 )
 def add_address(args: CommandArgs, context: CommandContext) -> None:
+    """Add a postal address to a contact.
+
+    Args:
+        args: Positional arguments ``(name, address)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, address = args
     contacts_service = context["contacts_service"]
 
@@ -401,6 +523,12 @@ def add_address(args: CommandArgs, context: CommandContext) -> None:
     description="Replace one saved address with another.",
 )
 def change_address(args: CommandArgs, context: CommandContext) -> None:
+    """Replace an existing address on a contact.
+
+    Args:
+        args: Positional arguments ``(name, old_address, new_address)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, old_address, new_address = args
     contacts_service = context["contacts_service"]
 
@@ -421,6 +549,12 @@ def change_address(args: CommandArgs, context: CommandContext) -> None:
     description="List all addresses saved for a contact.",
 )
 def list_addresses(args: CommandArgs, context: CommandContext) -> None:
+    """Print all addresses of a contact.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -442,6 +576,12 @@ def list_addresses(args: CommandArgs, context: CommandContext) -> None:
     description="Delete an address from a contact.",
 )
 def delete_address(args: CommandArgs, context: CommandContext) -> None:
+    """Remove an address from a contact.
+
+    Args:
+        args: Positional arguments ``(name, address)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, address = args
     contacts_service = context["contacts_service"]
 
@@ -458,6 +598,12 @@ def delete_address(args: CommandArgs, context: CommandContext) -> None:
     description="Assign a label to one of the contact's addresses.",
 )
 def add_address_label(args: CommandArgs, context: CommandContext) -> None:
+    """Assign a label to one of a contact's addresses.
+
+    Args:
+        args: Positional arguments ``(name, address, label)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, address, label = args
     contacts_service = context["contacts_service"]
 
@@ -474,6 +620,12 @@ def add_address_label(args: CommandArgs, context: CommandContext) -> None:
     description="Remove the label from one of the contact's addresses.",
 )
 def delete_address_label(args: CommandArgs, context: CommandContext) -> None:
+    """Remove the label from one of a contact's addresses.
+
+    Args:
+        args: Positional arguments ``(name, address)``.
+        context: Command context providing ``contacts_service``.
+    """
     name, address = args
     contacts_service = context["contacts_service"]
 
@@ -495,6 +647,13 @@ def delete_address_label(args: CommandArgs, context: CommandContext) -> None:
     description="Set or update a contact's birthday.",
 )
 def set_birthday(args: CommandArgs, context: CommandContext) -> None:
+    """Set or update a contact's birthday.
+
+    Args:
+        args: Positional arguments ``(name, birthday)`` where *birthday* is in
+            ``DD.MM.YYYY`` format.
+        context: Command context providing ``contacts_service``.
+    """
     name, birthday = args
     contacts_service = context["contacts_service"]
 
@@ -514,6 +673,12 @@ def set_birthday(args: CommandArgs, context: CommandContext) -> None:
     description="Display the saved birthday for a contact.",
 )
 def show_birthday(args: CommandArgs, context: CommandContext) -> None:
+    """Print the birthday of a contact.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -530,6 +695,12 @@ def show_birthday(args: CommandArgs, context: CommandContext) -> None:
     description="Remove the saved birthday from a contact.",
 )
 def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
+    """Remove a contact's birthday.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``contacts_service``.
+    """
     name = args[0]
     contacts_service = context["contacts_service"]
 
@@ -546,6 +717,13 @@ def delete_birthday(args: CommandArgs, context: CommandContext) -> None:
     description="Show upcoming birthdays and their congratulation dates.",
 )
 def list_upcoming_birthdays(args: CommandArgs, context: CommandContext) -> None:
+    """Print contacts with birthdays occurring within the next N days.
+
+    Args:
+        args: Positional arguments ``(days,)`` where *days* is an optional
+            integer string (defaults to ``7`` when ``None``).
+        context: Command context providing ``contacts``.
+    """
     contacts = context["contacts"]
 
     days = int(args[0]) if args[0] else 7
@@ -583,10 +761,19 @@ def list_upcoming_birthdays(args: CommandArgs, context: CommandContext) -> None:
     description="Open the note editor to create or update a note.",
 )
 def edit_note(args: CommandArgs, context: CommandContext) -> None:
+    """Open the full-screen editor to create or update a note.
+
+    If the note already exists its current content is pre-loaded into the
+    editor. The note is saved (or created) when the user presses Ctrl-S, and
+    discarded on Ctrl-Q.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``notes_service``.
+    """
     name = args[0]
     notes_service = context["notes_service"]
 
-    # Pre-fill if note already exists
     existing_note = notes_service.get_note(name)
     initial_text = existing_note.content.value if existing_note else ""
 
@@ -609,6 +796,12 @@ def edit_note(args: CommandArgs, context: CommandContext) -> None:
     description="Display the full content of a note.",
 )
 def show_note(args: CommandArgs, context: CommandContext) -> None:
+    """Print the full content of a note.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``notes_service``.
+    """
     name = args[0]
     notes_service = context["notes_service"]
 
@@ -625,6 +818,11 @@ def show_note(args: CommandArgs, context: CommandContext) -> None:
     description="Show all saved notes.",
 )
 def list_notes(context: CommandContext) -> None:
+    """Print a summary of all saved notes.
+
+    Args:
+        context: Command context providing ``notes``.
+    """
     notes = context["notes"]
     if not notes:
         print("No notes.")
@@ -638,6 +836,12 @@ def list_notes(context: CommandContext) -> None:
     description="Rename an existing note.",
 )
 def rename_note(args: CommandArgs, context: CommandContext) -> None:
+    """Rename a note.
+
+    Args:
+        args: Positional arguments ``(old_name, new_name)``.
+        context: Command context providing ``notes_service``.
+    """
     old_name, new_name = args
     notes_service = context["notes_service"]
 
@@ -659,6 +863,12 @@ def rename_note(args: CommandArgs, context: CommandContext) -> None:
     description="Delete a note.",
 )
 def delete_note(args: CommandArgs, context: CommandContext) -> None:
+    """Delete a note.
+
+    Args:
+        args: Positional arguments ``(name,)``.
+        context: Command context providing ``notes_service``.
+    """
     name = args[0]
     notes_service = context["notes_service"]
 
@@ -675,6 +885,12 @@ def delete_note(args: CommandArgs, context: CommandContext) -> None:
     description="Attach a tag to a note.",
 )
 def add_note_tag(args: CommandArgs, context: CommandContext) -> None:
+    """Attach a tag to a note.
+
+    Args:
+        args: Positional arguments ``(name, tag)``.
+        context: Command context providing ``notes_service``.
+    """
     name, tag = args
     notes_service = context["notes_service"]
 
@@ -693,6 +909,11 @@ def add_note_tag(args: CommandArgs, context: CommandContext) -> None:
     description="List all note tags with their usage counts.",
 )
 def list_note_tags(context: CommandContext) -> None:
+    """Print all tags used across notes together with their usage counts.
+
+    Args:
+        context: Command context providing ``notes`` and ``notes_service``.
+    """
     notes = context["notes"]
     notes_service = context["notes_service"]
 
@@ -714,6 +935,12 @@ def list_note_tags(context: CommandContext) -> None:
     description="Remove a tag from a note.",
 )
 def delete_note_tag(args: CommandArgs, context: CommandContext) -> None:
+    """Remove a tag from a note.
+
+    Args:
+        args: Positional arguments ``(name, tag)``.
+        context: Command context providing ``notes_service``.
+    """
     name, tag = args
     notes_service = context["notes_service"]
 
@@ -733,6 +960,15 @@ def delete_note_tag(args: CommandArgs, context: CommandContext) -> None:
     description="Search note titles and contents using fuzzy matching.",
 )
 def search_notes(args: CommandArgs, context: CommandContext) -> None:
+    """Search notes by title and content using fuzzy matching, then print results.
+
+    Matching substrings in both the note title and content snippet are
+    highlighted in bold green.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context providing ``notes`` and ``notes_service``.
+    """
     query = args[0]
     notes = context["notes"]
     notes_service = context["notes_service"]
@@ -796,6 +1032,12 @@ def search_notes(args: CommandArgs, context: CommandContext) -> None:
     description="Find all notes that have the given tag.",
 )
 def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
+    """Find and print all notes that carry the given tag.
+
+    Args:
+        args: Positional arguments ``(tag,)``.
+        context: Command context providing ``notes`` and ``notes_service``.
+    """
     tag = args[0]
     notes = context["notes"]
     notes_service = context["notes_service"]
@@ -817,6 +1059,12 @@ def search_notes_by_tag(args: CommandArgs, context: CommandContext) -> None:
     description="Search for contacts by name using fuzzy matching.",
 )
 def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
+    """Search for contacts by name using fuzzy matching.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context forwarded to :func:`_search_by_field`.
+    """
     _search_by_field(args, context, "name")
 
 @bot_commands.register(
@@ -825,6 +1073,12 @@ def search_contact_by_name(args: CommandArgs, context: CommandContext) -> None:
     description="Search for contacts by phone using fuzzy matching.",
 )
 def search_contact_by_phone(args: CommandArgs, context: CommandContext) -> None:
+    """Search for contacts by phone number using fuzzy matching.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context forwarded to :func:`_search_by_field`.
+    """
     _search_by_field(args, context, "phone")
 
 @bot_commands.register(
@@ -833,6 +1087,12 @@ def search_contact_by_phone(args: CommandArgs, context: CommandContext) -> None:
     description="Search for contacts by email using fuzzy matching.",
 )
 def search_contact_by_email(args: CommandArgs, context: CommandContext) -> None:
+    """Search for contacts by email address using fuzzy matching.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context forwarded to :func:`_search_by_field`.
+    """
     _search_by_field(args, context, "email")
 
 @bot_commands.register(
@@ -841,9 +1101,23 @@ def search_contact_by_email(args: CommandArgs, context: CommandContext) -> None:
     description="Search for contacts by address using fuzzy matching.",
 )
 def search_contact_by_address(args: CommandArgs, context: CommandContext) -> None:
+    """Search for contacts by address using fuzzy matching.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context forwarded to :func:`_search_by_field`.
+    """
     _search_by_field(args, context, "address")
 
 def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> None:
+    """Shared helper: search contacts by a given field and print suggestions.
+
+    Args:
+        args: Positional arguments ``(query,)``.
+        context: Command context providing ``contacts_service`` and ``contacts``.
+        field: The contact field to search; one of ``"name"``, ``"phone"``,
+            ``"email"``, or ``"address"``.
+    """
     query = args[0]
     contacts_service = context["contacts_service"]
     contacts = context["contacts"]
@@ -873,6 +1147,7 @@ def _search_by_field(args: CommandArgs, context: CommandContext, field: str) -> 
         console.print(title_text)
 
 class StopCommandsLoop(Exception):
+    """Raised by the ``bye`` command to signal the bot loop should terminate."""
     pass
 
 
@@ -884,6 +1159,11 @@ class StopCommandsLoop(Exception):
     description="Exit the interactive assistant loop.",
 )
 def say_goodbye() -> None:
+    """Print a farewell message and raise :exc:`StopCommandsLoop` to exit the bot.
+
+    Raises:
+        StopCommandsLoop: Always, to signal the command loop to terminate.
+    """
     print("Good bye!")
     raise StopCommandsLoop
 
