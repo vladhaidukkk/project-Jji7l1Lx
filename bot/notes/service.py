@@ -16,9 +16,23 @@ class SearchResultItemForNotes(NamedTuple):
 
 class NotesService:
     def __init__(self, notes: NotesBook) -> None:
+        """Initialise the service with a notes book.
+
+        Args:
+            notes: The :class:`NotesBook` instance this service operates on.
+        """
         self.__notes = notes
 
     def create_note(self, name: str, content: str = "") -> None:
+        """Create a new note.
+
+        Args:
+            name: The title/name for the new note.
+            content: Optional initial body text. Defaults to an empty string.
+
+        Raises:
+            NoteAlreadyExistsError: If a note named *name* already exists.
+        """
         note = self.__notes.find(name)
         if note:
             raise NoteAlreadyExistsError(f"Note '{name}' already exists.")
@@ -27,9 +41,26 @@ class NotesService:
         self.__notes.add_note(note)
 
     def get_note(self, name: str) -> Note | None:
+        """Retrieve a note by name.
+
+        Args:
+            name: The note name to look up.
+
+        Returns:
+            The :class:`Note` if found, otherwise ``None``.
+        """
         return self.__notes.find(name)
 
     def update_note_content(self, name: str, content: str) -> None:
+        """Replace the body text of an existing note.
+
+        Args:
+            name: The note's name.
+            content: The new body text.
+
+        Raises:
+            NoteNotFoundError: If no note named *name* exists.
+        """
         note = self.__notes.find(name)
         if not note:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
@@ -41,6 +72,16 @@ class NotesService:
         name: str,
         content: str,
     ) -> Literal["added", "updated"]:
+        """Create a note or update its content if it already exists.
+
+        Args:
+            name: The note's name.
+            content: The body text to set.
+
+        Returns:
+            ``"added"`` if a new note was created, or ``"updated"`` if an
+            existing note's content was replaced.
+        """
         note = self.__notes.find(name)
         if not note:
             self.create_note(name, content)
@@ -50,6 +91,18 @@ class NotesService:
         return "updated"
 
     def add_note_tags(self, name: str, tags: list[str]) -> list[str]:
+        """Add tags to an existing note.
+
+        Args:
+            name: The note's name.
+            tags: List of tag strings to add.
+
+        Returns:
+            A list of tag strings that were actually added (duplicates skipped).
+
+        Raises:
+            NoteNotFoundError: If no note named *name* exists.
+        """
         note = self.__notes.find(name)
         if not note:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
@@ -57,6 +110,18 @@ class NotesService:
         return note.add_tags(tags)
 
     def remove_note_tags(self, name: str, tags: list[str]) -> list[str]:
+        """Remove tags from an existing note.
+
+        Args:
+            name: The note's name.
+            tags: List of tag strings to remove.
+
+        Returns:
+            A list of tag strings that were actually removed.
+
+        Raises:
+            NoteNotFoundError: If no note named *name* exists.
+        """
         note = self.__notes.find(name)
         if not note:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
@@ -64,6 +129,14 @@ class NotesService:
         return note.remove_tags(tags)
 
     def delete_note(self, name: str) -> None:
+        """Permanently delete a note.
+
+        Args:
+            name: The name of the note to delete.
+
+        Raises:
+            NoteNotFoundError: If no note named *name* exists.
+        """
         note = self.__notes.find(name)
         if not note:
             raise NoteNotFoundError(f"Note '{name}' does not exist.")
@@ -75,6 +148,20 @@ class NotesService:
         old_name: str,
         new_name: str,
     ) -> Literal["renamed", "skipped"]:
+        """Rename a note.
+
+        Args:
+            old_name: The current name of the note.
+            new_name: The desired new name.
+
+        Returns:
+            ``"renamed"`` if the note was renamed, or ``"skipped"`` if
+            *old_name* and *new_name* are identical.
+
+        Raises:
+            NoteNotFoundError: If no note named *old_name* exists.
+            NoteAlreadyExistsError: If a note named *new_name* already exists.
+        """
         if old_name == new_name:
             return "skipped"
 
@@ -98,6 +185,18 @@ class NotesService:
         score_cutoff: float = 50.0,
         limit: int = 5,
     ) -> list[SearchResultItemForNotes]:
+        """Search notes by title and content using fuzzy matching.
+
+        Args:
+            query: The search string (case-insensitive).
+            score_cutoff: Minimum fuzzy-match score (0–100) for a note to be
+                included. Defaults to ``50.0``.
+            limit: Maximum number of results to return. Defaults to ``5``.
+
+        Returns:
+            A list of :class:`SearchResultItemForNotes` tuples sorted by
+            descending best score, capped at *limit* entries.
+        """
         query = query.lower()
 
         matches: list[SearchResultItemForNotes] = []
@@ -118,6 +217,14 @@ class NotesService:
         return sort_and_limit_matches(matches, limit, sort_key=lambda item: item.best_score)
 
     def search_notes_by_tag(self, tag: str) -> list[Note]:
+        """Return all notes that carry the given tag.
+
+        Args:
+            tag: The tag string to filter by (exact match after stripping).
+
+        Returns:
+            A list of :class:`Note` objects that have *tag* attached.
+        """
         note_tag = NoteTag(tag)
         return [
             note
@@ -126,6 +233,11 @@ class NotesService:
         ]
 
     def list_note_tags(self) -> list[tuple[str, int]]:
+        """Return all tags used across notes together with their usage counts.
+
+        Returns:
+            A list of ``(tag, count)`` tuples sorted alphabetically by tag name.
+        """
         tag_counts = Counter(
             tag.value for note in self.__notes.data.values() for tag in note.tags
         )
