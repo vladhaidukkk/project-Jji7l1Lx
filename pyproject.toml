@@ -15,8 +15,21 @@ dependencies = [
     "typer>=0.24.1",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
 [project.scripts]
 cna = "bot.__main__:main"
+
+[tool.pytest.ini_options]
+markers = [
+    "contacts: all contact-related tests",
+    "notes: all note-related tests",
+    "models: unit tests for domain models",
+    "service: service-layer / integration tests",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["bot"]
